@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MoTYF+ - Laman web interaktif kerjaya impian anda. Beyond the limits.">
+    <title>MoTYF+ | Beyond the limits</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- =========================================
+             GLOBAL BRAND LOGO (Muncul di semua scene)
+             ========================================= -->
+        <div class="global-brand-logo" id="globalBrandLogo" onclick="showScene('landingScene')">MoTYF+</div>
+        <!-- =========================================
+             AI CHAT OVERLAY
+             ========================================= -->
+        <div class="ai-chat-overlay" id="aiChatOverlay">
+            <div class="ai-chat-window">
+                <!-- Header -->
+                <div class="ai-chat-header">
+                    <div class="ai-chat-header-info">
+                        <div class="ai-chat-avatar">🤖</div>
+                        <div>
+                            <div class="ai-chat-title">MoTYF+ Career Assistant</div>
+                            <div class="ai-chat-subtitle" id="aiChatContext">Tanya tentang kerjaya...</div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="ai-chat-close" id="aiChatClose">✕</button>
+                </div>
+
+                <!-- Messages -->
+                <div class="ai-chat-messages" id="aiChatMessages"></div>
+
+                <!-- Input -->
+                <div class="ai-chat-input-wrapper">
+                    <input 
+                        type="text" 
+                        id="aiChatInput" 
+                        class="ai-chat-input" 
+                        placeholder="Taip soalan anda..."
+                        autocomplete="off">
+                    <button type="button" class="ai-chat-send" id="aiChatSend">
+                        <span>➤</span>
+                    </button>
+                </div>
+
+                <!-- Suggestion chips -->
+                <div class="ai-chat-suggestions" id="aiChatSuggestions"></div>
+            </div>
+        </div>
+
+        <!-- =========================================
+             GLOBAL USER PROFILE (Muncul di semua scene)
+             ========================================= -->
+        <div class="global-user-profile" id="globalUserProfile" style="display: none;">
+            <button type="button" class="user-profile-btn" id="globalUserProfileBtn">
+                <div class="user-avatar" id="globalUserAvatar">A</div>
+                <div class="user-info">
+                    <span class="user-name" id="globalUserName">Username</span>
+                    <span class="user-class" id="globalUserClass">Kelas</span>
+                </div>
+                <span class="dropdown-arrow">▾</span>
+            </button>
+
+            <div class="user-dropdown" id="globalUserDropdown">
+                <button type="button" class="dropdown-item" id="globalDashboardBtn">
+                    <span class="dropdown-icon">📊</span>
+                    <span>Dashboard</span>
+                </button>
+                <button type="button" class="dropdown-item" id="globalProfileBtn">
+                    <span class="dropdown-icon">👤</span>
+                    <span>Profil Saya</span>
+                </button>
+                <div class="dropdown-divider"></div>
+                <button type="button" class="dropdown-item logout-item" id="globalLogoutBtn">
+                    <span class="dropdown-icon">🚪</span>
+                    <span>Log Keluar</span>
+                </button>
+            </div>
+        </div>
+        <!-- =========================================
+             GUIDE TUTORIAL OVERLAY
+             ========================================= -->
+        <div class="guide-overlay" id="guideOverlay" style="display: none;">
+            <div class="guide-spotlight" id="guideSpotlight"></div>
+            
+            <div class="guide-arrow" id="guideArrow">
+                <div class="arrow-shape"></div>
+            </div>
+
+            <div class="guide-caption" id="guideCaption">
+                <div class="guide-progress" id="guideProgress">
+                    <span id="guideStepNum">1</span> / <span id="guideTotalSteps">7</span>
+                </div>
+                <div class="guide-caption-title" id="guideTitle">Tajuk</div>
+                <div class="guide-caption-text" id="guideText">Penerangan...</div>
+                <div class="guide-caption-actions">
+                    <button type="button" class="guide-skip-btn" id="guideSkipBtn">Skip</button>
+                    <button type="button" class="guide-next-btn" id="guideNextBtn">Seterusnya →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- =========================================
+             CAREER DETAIL MODAL
+             ========================================= -->
+        <!-- =========================================
+             CAREER DETAIL MODAL
+             ========================================= -->
+        <div class="career-modal" id="careerModal">
+            <div class="career-modal-content">
+                <button type="button" class="career-modal-bookmark" id="careerModalBookmark" title="Simpan kerjaya">🤍</button>
+                <button type="button" class="career-modal-close" id="careerModalClose">✕</button>
+                
+                <div class="career-modal-header">
+                    <div class="career-modal-icon" id="modalCareerIcon">💼</div>
+                    <h2 class="career-modal-title" id="modalCareerName">Nama Kerjaya</h2>
+                    <div class="career-modal-badges">
+                        <span class="badge badge-code" id="modalCareerCode">IC</span>
+                        <span class="badge badge-ya" id="modalCareerCluster">Teknologi</span>
+                    </div>
+                </div>
+
+                <div class="career-modal-body">
+                    <div class="career-modal-section">
+                        <h4 class="career-modal-section-title">📝 Deskripsi</h4>
+                        <p class="career-modal-text" id="modalCareerDesc">-</p>
+                    </div>
+
+                    <div class="career-modal-grid">
+                        <div class="career-modal-info">
+                            <div class="info-icon">💰</div>
+                            <div class="info-label">Gaji Permulaan</div>
+                            <div class="info-value" id="modalCareerSalary">-</div>
+                        </div>
+                        <div class="career-modal-info">
+                            <div class="info-icon">🎓</div>
+                            <div class="info-label">Pendidikan</div>
+                            <div class="info-value" id="modalCareerEducation">-</div>
+                        </div>
+                    </div>
+
+                    <div class="career-modal-section">
+                        <h4 class="career-modal-section-title">🛤️ Laluan Kerjaya</h4>
+                        <p class="career-modal-text" id="modalCareerPath">-</p>
+                    </div>
+
+                    <div class="career-modal-section">
+                        <h4 class="career-modal-section-title">📚 Subjek Fokus SPM</h4>
+                        <div class="career-modal-tags" id="modalCareerSubjects"></div>
+                    </div>
+
+                    <div class="career-modal-section">
+                        <h4 class="career-modal-section-title">💡 Kemahiran Utama</h4>
+                        <div class="career-modal-tags" id="modalCareerSkills"></div>
+                    </div>
+
+                    <div class="career-modal-section">
+                        <h4 class="career-modal-section-title">🇲🇾 Universiti Malaysia</h4>
+                        <div class="career-modal-tags" id="modalCareerUniMY"></div>
+                    </div>
+
+                    <div class="career-modal-section">
+                        <h4 class="career-modal-section-title">🌍 Universiti Luar Negara</h4>
+                        <div class="career-modal-tags" id="modalCareerUniIntl"></div>
+                    </div>
+                </div>
+
+                <!-- Footer dengan 2 butang -->
+                <div class="career-modal-footer">
+                    <button type="button" class="ask-ai-btn" id="askAiBtn">
+                        <span class="ask-ai-icon">💬</span>
+                        <span class="ask-ai-text">MoTYF AI</span>
+                    </button>
+                    <button type="button" class="career-modal-ok-btn" id="careerModalOkBtn">
+                        Faham ✓
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+
+        <!-- SCENE 1: LANDING PAGE -->
+        <section id="landingScene" class="scene active">
+            <nav class="top-nav">
+                <ul class="nav-links">
+                    <li><a href="#" id="navExplore">Terokai</a></li>
+                    <li><a href="#" id="navAbout">Tentang MoTYF+</a></li>
+                    <li><a href="#" id="navGuide">Cara Guna</a></li>
+                </ul>
+                <button type="button" class="login-button" id="loginBtn">Log in / Sign up</button>
+            </nav>
+
+            <!-- 3 LOGO — pindah ke sini, keluar dari hero-content -->
+            <div class="hero-logos">
+                <img src="assets/logo-madani (1).png" alt="Logo Madani" class="hero-logo">
+                <img src="assets/logo-kpm (1).png" alt="Logo KPM" class="hero-logo">
+                <img src="assets/logo-sekolah (1).png" alt="Logo Sekolah" class="hero-logo">
+            </div>
+
+            <main class="hero-content">
+                <img src="assets/motyf-logo.png" alt="MoTYF+ Logo" class="hero-main-logo">
+                <button type="button" class="journey-button" id="journeyBtn">MULAKAN PERJALANAN ANDA</button>
+            </main>
+
+            <footer class="bottom-tagline">
+                <span>— beyond the limits —</span>
+            </footer>
+        </section>
+
+        <!-- SCENE 2: LOGIN SCENE -->
+        <section id="loginScene" class="scene">
+            <div class="auth-card">
+                <button type="button" class="back-btn" onclick="showScene('landingScene')">← Back</button>
+                
+                <h2 class="auth-title">Welcome Back</h2>
+                <p class="auth-subtitle">Log in to continue your journey</p>
+
+                <form id="loginForm" novalidate>
+                    <div class="form-group">
+                        <label for="loginUsername">Username</label>
+                        <input type="text" id="loginUsername" placeholder="Enter your username" autocomplete="username">
+                        <span class="error-msg" id="loginUsernameError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password">
+                            <button type="button" class="eye-btn" onclick="togglePassword('loginPassword', this)" aria-label="Tunjukkan password">👁</button>
+                        </div>
+                        <span class="error-msg" id="loginPasswordError"></span>
+                    </div>
+
+                    <div class="error-msg" id="loginGlobalError" style="text-align: center; margin-bottom: 1rem;"></div>
+
+                    <button type="submit" class="auth-submit-btn">LOG IN</button>
+                </form>
+
+                <p class="auth-switch">Belum ada akaun? <a href="#" id="goToSignup">Sign Up</a></p>
+            </div>
+        </section>
+
+        <!-- SCENE 3: SIGN UP SCENE -->
+        <section id="signupScene" class="scene">
+            <div class="auth-card">
+                <button type="button" class="back-btn" onclick="showScene('loginScene')">← Back to Login</button>
+                
+                <h2 class="auth-title">Create Your Account</h2>
+                <p class="auth-subtitle">Start your career journey with MoTYF+</p>
+
+                <form id="signupForm" novalidate>
+                    <div class="form-group">
+                        <label for="signupUsername">Username</label>
+                        <input type="text" id="signupUsername" placeholder="Create your username" autocomplete="username">
+                        <span class="error-msg" id="signupUsernameError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="signupKelas">Kelas</label>
+                        <input type="text" id="signupKelas" placeholder="Contoh: 5 Sains 1" autocomplete="off">
+                        <span class="error-msg" id="signupKelasError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="signupPassword">Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="signupPassword" placeholder="Create your password" autocomplete="new-password">
+                            <button type="button" class="eye-btn" onclick="togglePassword('signupPassword', this)" aria-label="Tunjukkan password">👁</button>
+                        </div>
+                        <span class="error-msg" id="signupPasswordError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="signupConfirmPassword">Confirm Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="signupConfirmPassword" placeholder="Confirm your password" autocomplete="new-password">
+                            <button type="button" class="eye-btn" onclick="togglePassword('signupConfirmPassword', this)" aria-label="Tunjukkan password">👁</button>
+                        </div>
+                        <span class="error-msg" id="signupConfirmError"></span>
+                    </div>
+
+                    <div class="error-msg" id="signupGlobalError" style="text-align: center; margin-bottom: 1rem;"></div>
+
+                    <button type="submit" class="auth-submit-btn">SIGN UP</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- SCENE 4: CAREER QUESTION -->
+        <section id="careerQuestionScene" class="scene">
+            <div class="auth-card career-card">
+                <button type="button" class="back-btn" onclick="showScene('landingScene')">← Back</button>
+                
+                <div class="user-greeting" id="userGreeting"></div>
+                
+                <h2 class="auth-title">Hala Tuju Kerjaya</h2>
+                <p class="auth-subtitle">Adakah anda sudah mempunyai hala tuju kerjaya pada masa hadapan?</p>
+
+                <div class="career-options">
+                    <button type="button" class="career-option-btn yes-btn" id="careerYesBtn">
+                        <span class="option-icon">✦</span>
+                        <span class="option-text">YA</span>
+                        <span class="option-desc">Saya sudah tahu apa yang saya mahu</span>
+                    </button>
+
+                    <button type="button" class="career-option-btn no-btn" id="careerNoBtn">
+                        <span class="option-icon">?</span>
+                        <span class="option-text">TIDAK</span>
+                        <span class="option-desc">Saya masih mencari hala tuju saya</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCENE 5: REASON QUESTION -->
+        <section id="reasonQuestionScene" class="scene">
+            <div class="auth-card reason-card">
+                <button type="button" class="back-btn" onclick="showScene('careerQuestionScene')">← Back</button>
+                
+                <h2 class="auth-title">Mengapa Belum Ada Hala Tuju?</h2>
+                <p class="auth-subtitle">Pilih sebab yang menggambarkan anda (boleh pilih lebih daripada satu)</p>
+
+                <div class="reason-options" id="reasonOptions">
+                    <button type="button" class="reason-option" data-value="Tidak tahu minat saya">
+                        <span class="reason-check">○</span>
+                        <span class="reason-text">Tidak tahu minat saya</span>
+                    </button>
+                    <button type="button" class="reason-option" data-value="Terlalu banyak pilihan">
+                        <span class="reason-check">○</span>
+                        <span class="reason-text">Terlalu banyak pilihan</span>
+                    </button>
+                    <button type="button" class="reason-option" data-value="Takut buat pilihan salah">
+                        <span class="reason-check">○</span>
+                        <span class="reason-text">Takut buat pilihan salah</span>
+                    </button>
+                    <button type="button" class="reason-option" data-value="Kurang pendedahan tentang kerjaya">
+                        <span class="reason-check">○</span>
+                        <span class="reason-text">Kurang pendedahan tentang kerjaya</span>
+                    </button>
+                    <button type="button" class="reason-option" data-value="Tekanan dari keluarga atau rakan">
+                        <span class="reason-check">○</span>
+                        <span class="reason-text">Tekanan dari keluarga atau rakan</span>
+                    </button>
+                    <button type="button" class="reason-option" data-value="Masih fokus pada pelajaran">
+                        <span class="reason-check">○</span>
+                        <span class="reason-text">Masih fokus pada pelajaran</span>
+                    </button>
+                </div>
+
+                <div class="error-msg" id="reasonError" style="text-align: center; margin-top: 1rem;"></div>
+
+                <button type="button" class="auth-submit-btn" id="reasonContinueBtn" style="margin-top: 1.5rem;">CONTINUE</button>
+            </div>
+        </section>
+
+        <!-- SCENE 6: CAREER EXPLORATION -->
+        <section id="careerExplorationScene" class="scene">
+            <div class="exploration-container">
+                <button type="button" class="back-btn" onclick="showScene('landingScene')">← Back</button>
+                
+                <h2 class="auth-title">Peta Perjalanan Anda</h2>
+                <p class="auth-subtitle" id="explorationMessage">Jom terokai kluster kerjaya yang mungkin sesuai dengan anda</p>
+
+                <div class="career-grid" id="careerGrid">
+                    <button type="button" class="career-cluster" data-value="Teknologi & Digital">
+                        <span class="cluster-icon">💻</span>
+                        <span class="cluster-name">Teknologi & Digital</span>
+                        <span class="cluster-desc">Coding, AI, Data, Cybersecurity</span>
+                    </button>
+
+                    <button type="button" class="career-cluster" data-value="Kesihatan & Perubatan">
+                        <span class="cluster-icon">🩺</span>
+                        <span class="cluster-name">Kesihatan & Perubatan</span>
+                        <span class="cluster-desc">Doktor, Jururawat, Farmasi</span>
+                    </button>
+
+                    <button type="button" class="career-cluster" data-value="Seni & Kreatif">
+                        <span class="cluster-icon">🎨</span>
+                        <span class="cluster-name">Seni & Kreatif</span>
+                        <span class="cluster-desc">Design, Muzik, Animasi, Filem</span>
+                    </button>
+
+                    <button type="button" class="career-cluster" data-value="Sains & Kejuruteraan">
+                        <span class="cluster-icon">🔬</span>
+                        <span class="cluster-name">Sains & Kejuruteraan</span>
+                        <span class="cluster-desc">Kimia, Fizik, Awam, Elektrik</span>
+                    </button>
+
+                    <button type="button" class="career-cluster" data-value="Perniagaan & Keusahawanan">
+                        <span class="cluster-icon">💼</span>
+                        <span class="cluster-name">Perniagaan & Keusahawanan</span>
+                        <span class="cluster-desc">Bisnes, Marketing, Kewangan</span>
+                    </button>
+
+                    <button type="button" class="career-cluster" data-value="Pendidikan & Sosial">
+                        <span class="cluster-icon">📚</span>
+                        <span class="cluster-name">Pendidikan & Sosial</span>
+                        <span class="cluster-desc">Guru, Kaunselor, Kerja Sosial</span>
+                    </button>
+                </div>
+
+                <div class="error-msg" id="explorationError" style="text-align: center; margin-top: 1rem;"></div>
+
+                <button type="button" class="auth-submit-btn" id="explorationContinueBtn" style="margin-top: 1.5rem;" disabled>TERUSKAN PERJALANAN</button>
+            </div>
+        </section>
+
+        <!-- SCENE 7: GAME SCENE -->
+         <section id="gameScene" class="scene">
+            <div class="game-container">
+                <button type="button" class="back-btn" onclick="showScene('landingScene')">← Back</button>
+
+                <div id="journeyBegin" class="journey-begin">
+                    <div class="journey-icon">✦</div>
+                    <h2 class="journey-title">Perjalanan Bermula!</h2>
+                    <p class="journey-text" id="journeyText"></p>
+                    <div class="journey-loading">
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                    </div>
+                    <p class="journey-subtext">Bersedia untuk pengembaraan seterusnya...</p>
+                </div>
+
+                <div id="gdevelopGame" class="gdevelop-game" style="display: none;">
+                    <h2 class="game-title">Jom Main!</h2>
+                    <p class="game-desc">Selesaikan misi ini untuk teruskan perjalanan anda.</p>
+                    
+                    <div class="iframe-wrapper">
+                        <iframe 
+                            id="gameIframe"
+                            src="assets/game/index.html" 
+                            frameborder="0"
+                            allowfullscreen
+                            title="MoTYF+ Adventure Game">
+                        </iframe>
+                    </div>
+                    
+                    <button type="button" class="auth-submit-btn" id="continueToCodeBtn" style="margin-top: 1.5rem;">
+                        TERUSKAN →
+                    </button>
+                </div>
+
+            </div>
+        </section>
+        <!-- =========================================
+             SCENE 8: USER DASHBOARD
+             ========================================= -->
+        <section id="dashboardScene" class="scene">
+            <div class="dashboard-container">
+                <button type="button" class="back-btn" onclick="showScene('landingScene')">← Back</button>
+                
+                <!-- Header -->
+                <div class="dashboard-header">
+                    <div class="dashboard-avatar" id="dashboardAvatar">?</div>
+                    <h2 class="dashboard-name" id="dashboardName">Username</h2>
+                    <p class="dashboard-class" id="dashboardClass">Kelas</p>
+                </div>
+
+                <!-- Kod IMK (Highlight) -->
+                <div class="dashboard-imk-card" id="dashboardImkCard">
+                    <p class="imk-label">Kod IMK Anda (RIASEC)</p>
+                    <div class="imk-code-display" id="imkCodeDisplay">---</div>
+                    <p class="imk-meaning" id="imkMeaning">Selesaikan IMK untuk lihat kod anda</p>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="dashboard-grid">
+                    <!-- Hala Tuju Awal -->
+                    <div class="dashboard-card">
+                        <div class="card-icon">🎯</div>
+                        <div class="card-label">Hala Tuju Awal</div>
+                        <div class="card-value" id="dashDirection">-</div>
+                    </div>
+
+                    <!-- Jumpa Kerjaya? -->
+                    <div class="dashboard-card">
+                        <div class="card-icon">✨</div>
+                        <div class="card-label">Jumpa Kerjaya?</div>
+                        <div class="card-value" id="dashFound">-</div>
+                    </div>
+
+                    <!-- Selesai IMK -->
+                    <div class="dashboard-card">
+                        <div class="card-icon">🎮</div>
+                        <div class="card-label">Selesai IMK</div>
+                        <div class="card-value" id="dashImk">-</div>
+                    </div>
+                </div>
+
+                <!-- Sebab (kalau pilih TIDAK) -->
+                <div class="dashboard-section" id="reasonsSection" style="display: none;">
+                    <h3 class="section-title">Sebab Belum Ada Hala Tuju</h3>
+                    <div class="reasons-list" id="dashReasons"></div>
+                </div>
+
+                <!-- Favourites (Kerjaya Disimpan) -->
+                <div class="dashboard-section">
+                    <h3 class="section-title">❤️ Kerjaya Disimpan</h3>
+                    <div class="favourites-grid" id="favouritesGrid"></div>
+                </div>
+
+                <!-- Progress Journey -->
+                <div class="dashboard-section">
+                    <h3 class="section-title">Progress Perjalanan</h3>
+                    <div class="progress-list" id="progressList"></div>
+                </div>
+
+            </div>
+        </section>
+        <!-- =========================================
+             SCENE 9: USER PROFILE
+             ========================================= -->
+        <section id="profileScene" class="scene">
+            <div class="profile-container">
+                <button type="button" class="back-btn" onclick="showScene('landingScene')">← Back</button>
+                
+                <!-- Profile Header -->
+                <div class="profile-header">
+                    <div class="profile-avatar" id="profileAvatar">?</div>
+                    <h2 class="profile-name" id="profileName">Username</h2>
+                    <p class="profile-class" id="profileClass">Kelas</p>
+                </div>
+
+                <div class="profile-info-grid">
+                    <div class="profile-info-item">
+                        <div class="info-icon">📅</div>
+                        <div class="info-content">
+                            <div class="info-label">Tarikh Daftar</div>
+                            <div class="info-value" id="profileCreatedAt">-</div>
+                        </div>
+                    </div>
+
+                    <div class="profile-info-item">
+                        <div class="info-icon">🎓</div>
+                        <div class="info-label-inline">Kelas</div>
+                        <div class="info-value" id="profileKelas">-</div>
+                    </div>
+
+                    <div class="profile-info-item">
+                        <div class="info-icon">🎯</div>
+                        <div class="info-label-inline">Hala Tuju</div>
+                        <div class="info-value" id="profileDirection">-</div>
+                    </div>
+
+                    <div class="profile-info-item">
+                        <div class="info-icon">✨</div>
+                        <div class="info-label-inline">Jumpa Kerjaya?</div>
+                        <div class="info-value" id="profileFound">-</div>
+                    </div>
+                </div>
+
+                <!-- Kod IMK -->
+                <div class="profile-section">
+                    <h3 class="profile-section-title">Kod IMK (RIASEC)</h3>
+                    <div class="profile-imk-display" id="profileImkCode">---</div>
+                    <p class="profile-imk-meaning" id="profileImkMeaning">Belum selesai IMK</p>
+                </div>
+
+
+
+                <!-- Butang Tindakan -->
+                <div class="profile-actions">
+                    <button type="button" class="profile-btn secondary-btn" id="editProfileBtn">
+                        ✏️ Edit Profil
+                    </button>
+                    <button type="button" class="profile-btn danger-btn" id="profileLogoutBtn">
+                        🚪 Log Keluar
+                    </button>
+                </div>
+
+            </div>
+        </section>
+        <!-- =========================================
+             SCENE 10: EDIT PROFILE
+             ========================================= -->
+        <section id="editProfileScene" class="scene">
+            <div class="edit-profile-container">
+                <button type="button" class="edit-back-btn" onclick="showScene('profileScene')">← Back to Profile</button>
+                
+                <h2 class="auth-title">Edit Profil</h2>
+                <p class="auth-subtitle">Kemaskini maklumat peribadi anda</p>
+
+                <form id="editProfileForm" novalidate>
+                    <!-- Username (readonly) -->
+                    <div class="form-group">
+                        <label for="editUsername">Username</label>
+                        <input type="text" id="editUsername" placeholder="Username" readonly style="opacity: 0.6; cursor: not-allowed;">
+                        <small class="field-hint">Username tidak boleh ditukar</small>
+                    </div>
+
+                    <!-- Kelas -->
+                    <div class="form-group">
+                        <label for="editKelas">Kelas</label>
+                        <input type="text" id="editKelas" placeholder="Contoh: 5 Sains 1" autocomplete="off">
+                        <span class="error-msg" id="editKelasError"></span>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="form-divider">
+                        <span>Tukar Password (Optional)</span>
+                    </div>
+
+                    <!-- Current Password -->
+                    <div class="form-group">
+                        <label for="editCurrentPassword">Password Semasa</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="editCurrentPassword" placeholder="Masukkan password semasa" autocomplete="current-password">
+                            <button type="button" class="eye-btn" onclick="togglePassword('editCurrentPassword', this)" aria-label="Tunjukkan password">👁</button>
+                        </div>
+                        <span class="error-msg" id="editCurrentPasswordError"></span>
+                    </div>
+
+                    <!-- New Password -->
+                    <div class="form-group">
+                        <label for="editNewPassword">Password Baru</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="editNewPassword" placeholder="Password baru (min 6 aksara)" autocomplete="new-password">
+                            <button type="button" class="eye-btn" onclick="togglePassword('editNewPassword', this)" aria-label="Tunjukkan password">👁</button>
+                        </div>
+                        <span class="error-msg" id="editNewPasswordError"></span>
+                    </div>
+
+                    <!-- Confirm New Password -->
+                    <div class="form-group">
+                        <label for="editConfirmPassword">Sahkan Password Baru</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="editConfirmPassword" placeholder="Ulang password baru" autocomplete="new-password">
+                            <button type="button" class="eye-btn" onclick="togglePassword('editConfirmPassword', this)" aria-label="Tunjukkan password">👁</button>
+                        </div>
+                        <span class="error-msg" id="editConfirmPasswordError"></span>
+                    </div>
+
+                    <div class="error-msg" id="editGlobalError" style="text-align: center; margin-bottom: 1rem;"></div>
+                    <div class="success-msg" id="editSuccessMsg" style="text-align: center; margin-bottom: 1rem;"></div>
+
+                    <button type="submit" class="auth-submit-btn">SIMPAN PERUBAHAN</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- =========================================
+             SCENE 11: CODE SCENE (KOD HOLLAND + KERJAYA)
+             ========================================= -->
+        <section id="codeScene" class="scene">
+            <div class="code-container">
+                <button type="button" class="edit-back-btn" id="codeSceneBackBtn">← Back to Home</button>
+
+                <!-- Header Kod Holland -->
+                <div class="code-header">
+                    <p class="code-holland-label">Kod Holland Anda</p>
+                    <div class="code-holland-display" id="hollandDisplay">---</div>
+                    <div class="code-holland-meanings" id="hollandMeanings"></div>
+                </div>
+
+                <!-- Kategori Kluster -->
+                <div class="code-categories">
+                    <button type="button" class="category-btn active" data-cluster="all">
+                        <span class="cat-icon">🌟</span>
+                        <span class="cat-name">Semua</span>
+                    </button>
+                    <button type="button" class="category-btn" data-cluster="Teknologi & Digital">
+                        <span class="cat-icon">💻</span>
+                        <span class="cat-name">Teknologi</span>
+                    </button>
+                    <button type="button" class="category-btn" data-cluster="Kesihatan & Perubatan">
+                        <span class="cat-icon">🩺</span>
+                        <span class="cat-name">Kesihatan</span>
+                    </button>
+                    <button type="button" class="category-btn" data-cluster="Seni & Kreatif">
+                        <span class="cat-icon">🎨</span>
+                        <span class="cat-name">Seni</span>
+                    </button>
+                    <button type="button" class="category-btn" data-cluster="Sains & Kejuruteraan">
+                        <span class="cat-icon">🔬</span>
+                        <span class="cat-name">Sains</span>
+                    </button>
+                    <button type="button" class="category-btn" data-cluster="Perniagaan & Keusahawanan">
+                        <span class="cat-icon">💼</span>
+                        <span class="cat-name">Perniagaan</span>
+                    </button>
+                    <button type="button" class="category-btn" data-cluster="Pendidikan & Sosial">
+                        <span class="cat-icon">📚</span>
+                        <span class="cat-name">Pendidikan</span>
+                    </button>
+                </div>
+
+                <!-- Subtitle -->
+                <p class="code-filter-note" id="filterNote">
+                    Menunjukkan <strong id="careerCount">0</strong> kerjaya untuk kod <strong id="filterNoteCode">---</strong>
+                </p>
+
+                <!-- Career Grid -->
+                <div class="career-grid-code" id="careerGridCode"></div>
+
+                <p class="code-footer">— beyond the limits —</p>
+            </div>
+        </section>
+        <!-- =========================================
+             SCENE 12: ADMIN LOGIN
+             ========================================= -->
+        <section id="adminLoginScene" class="scene">
+            <div class="auth-card admin-login-card">
+                <button type="button" class="edit-back-btn" onclick="showScene('landingScene'); window.location.hash = '';">
+                    ← Back to Site
+                </button>
+                
+                <h2 class="auth-title">Admin Panel</h2>
+                <p class="auth-subtitle">Log masuk sebagai pentadbir</p>
+
+                <form id="adminLoginForm" novalidate>
+                    <div class="form-group">
+                        <label for="adminUsername">Username</label>
+                        <input type="text" id="adminUsername" placeholder="Admin username" autocomplete="username">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adminPassword">Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="adminPassword" placeholder="Admin password" autocomplete="current-password">
+                            <button type="button" class="eye-btn" onclick="togglePassword('adminPassword', this)">👁</button>
+                        </div>
+                    </div>
+
+                    <div class="error-msg" id="adminLoginError" style="text-align: center; margin-bottom: 1rem;"></div>
+
+                    <button type="submit" class="auth-submit-btn">LOG IN AS ADMIN</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- =========================================
+             SCENE 13: ADMIN DASHBOARD
+             ========================================= -->
+        <section id="adminDashboardScene" class="scene">
+            <div class="admin-container">
+                <button type="button" class="edit-back-btn" id="adminBackBtn">
+                    ← Log Keluar Admin
+                </button>
+
+                <div class="admin-header">
+                    <h1 class="admin-title">📊 Admin Dashboard</h1>
+                    <p class="admin-subtitle">Statistik Pelajar MoTYF+</p>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="admin-summary" id="adminSummary"></div>
+
+                <!-- Charts -->
+                <div class="admin-charts">
+                    <div class="admin-chart-card">
+                        <h3 class="chart-title">🧭 Kluster Pilihan</h3>
+                        <div class="chart-list" id="clusterChart"></div>
+                    </div>
+
+                    <div class="admin-chart-card">
+                        <h3 class="chart-title">🎯 Kod Holland (Huruf Pertama)</h3>
+                        <div class="chart-list" id="hollandChart"></div>
+                    </div>
+
+                    <div class="admin-chart-card">
+                        <h3 class="chart-title">❓ Sebab Belum Ada Hala Tuju</h3>
+                        <div class="chart-list" id="reasonChart"></div>
+                    </div>
+                </div>
+
+                <!-- Student List -->
+                <div class="admin-table-card">
+                    <div class="table-header">
+                        <h3 class="chart-title">👥 Senarai Pelajar</h3>
+                        <button type="button" class="export-btn" id="exportBtn">📥 Export CSV</button>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="admin-table" id="studentTable">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Kelas</th>
+                                    <th>Hala Tuju</th>
+                                    <th>Kluster</th>
+                                    <th>Kod IMK</th>
+                                    <th>Tarikh</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+        <!-- =========================================
+             SCENE: ABOUT MoTYF+
+             ========================================= -->
+        <section id="aboutScene" class="scene">
+            <div class="about-container">
+                <button type="button" class="edit-back-btn" onclick="showScene('landingScene')">← Back to Home</button>
+
+                <div class="about-header">
+                    <div class="about-icon">🚀</div>
+                    <h1 class="about-title">Tentang MoTYF+</h1>
+                    <p class="about-subtitle">Move Towards Your Future, Beyond Limit</p>
+                </div>
+
+                <div class="about-body">
+                    <!-- Apa Itu MoTYF+ -->
+                    <div class="about-section">
+                        <h3 class="about-section-title">💡 Apa Itu MoTYF+?</h3>
+                        <p class="about-text">
+                            <strong>MoTYF+</strong> (Move Towards Your Future) adalah platform interaktif 
+                            penerokaan kerjaya yang direka khas untuk pelajar sekolah menengah. Kami 
+                            membantu pelajar mengenal pasti minat, bakat, dan hala tuju kerjaya impian 
+                            mereka melalui pengalaman seperti sebuah <em>adventure game</em>.
+                        </p>
+                    </div>
+
+                    <!-- Misi Kami -->
+                    <div class="about-section">
+                        <h3 class="about-section-title">🎯 Misi Kami</h3>
+                        <div class="about-mission">
+                            <div class="mission-card">
+                                <div class="mission-icon">🎓</div>
+                                <div class="mission-title">Untuk Pelajar</div>
+                                <div class="mission-desc">Bantu pelajar temui kerjaya impian & bina masa depan yang bermakna.</div>
+                            </div>
+                            <div class="mission-card">
+                                <div class="mission-icon">🏫</div>
+                                <div class="mission-title">Untuk Sekolah</div>
+                                <div class="mission-desc">Sediakan data & insight tentang minat pelajar untuk bimbingan kerjaya.</div>
+                            </div>
+                            <div class="mission-card">
+                                <div class="mission-icon">🇲🇾</div>
+                                <div class="mission-title">Untuk Negara</div>
+                                <div class="mission-desc">Bantu lahirkan generasi muda Malaysia yang bersedia untuk masa depan.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Apa Yang Kami Tawarkan -->
+                    <div class="about-section">
+                        <h3 class="about-section-title">✨ Apa Yang Kami Tawarkan</h3>
+                        <div class="about-features">
+                            <div class="about-feature">
+                                <div class="feature-icon">🧭</div>
+                                <div class="feature-title">Inventori Minat Kerjaya</div>
+                                <div class="feature-desc">Kenal pasti minat melalui IMK berdasarkan teori RIASEC</div>
+                            </div>
+                            <div class="about-feature">
+                                <div class="feature-icon">📊</div>
+                                <div class="feature-title">48+ Kerjaya</div>
+                                <div class="feature-desc">Terokai kerjaya dalam 6 kluster utama industri</div>
+                            </div>
+                            <div class="about-feature">
+                                <div class="feature-icon">🗺️</div>
+                                <div class="feature-title">Roadmap Kerjaya</div>
+                                <div class="feature-desc">Panduan lengkap — subjek, universiti, dan langkah-langkah</div>
+                            </div>
+                            <div class="about-feature">
+                                <div class="feature-icon">🎮</div>
+                                <div class="feature-title">Pengalaman Interaktif</div>
+                                <div class="feature-desc">Belajar melalui game, bukan sekadar baca</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CTA -->
+                    <div class="about-cta">
+                        <p class="about-cta-text">Sedia untuk mulakan perjalanan anda?</p>
+                        <button type="button" class="auth-submit-btn" onclick="showScene('landingScene')">
+                            START YOUR JOURNEY →
+                        </button>
+                    </div>
+
+                    <!-- Footer -->
+                    <p class="about-footer">Made with ❤️ untuk pelajar Malaysia</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================
+             SCENE: EXPLORE KERJAYA
+             ========================================= -->
+        <section id="exploreScene" class="scene">
+            <div class="explore-container-scene">
+                <button type="button" class="edit-back-btn" id="exploreBackBtn">← Back to Home</button>
+
+                <!-- View 1: Kluster -->
+                <div id="clusterView">
+                    <div class="explore-header">
+                        <div class="explore-icon">🧭</div>
+                        <h1 class="explore-title">Explore Kerjaya</h1>
+                        <p class="explore-subtitle">Terokai 6 kluster kerjaya utama. Klik untuk lihat kerjaya dalam setiap bidang.</p>
+                    </div>
+
+                    <div class="clusters-grid" id="clustersGrid"></div>
+                </div>
+
+                <!-- View 2: Kerjaya dalam Kluster -->
+                <div id="careerInClusterView" style="display: none;">
+                    <div class="explore-header">
+                        <button type="button" class="back-to-clusters-btn" id="backToClustersBtn">
+                            ← Kembali ke Kluster
+                        </button>
+                        <div class="explore-icon" id="clusterDetailIcon">💻</div>
+                        <h1 class="explore-title" id="clusterDetailTitle">Teknologi & Digital</h1>
+                        <p class="explore-subtitle" id="clusterDetailCount">0 kerjaya dalam kluster ini</p>
+                    </div>
+
+                    <div class="career-grid-code" id="clusterCareerGrid"></div>
+                </div>
+
+                <p class="explore-footer">— beyond the limits —</p>
+            </div>
+        </section>
+        <!-- =========================================
+             SCENE: SOALAN SELEPAS EXPLORE
+             ========================================= -->
+        <section id="exploreQuestionScene" class="scene">
+            <div class="auth-card career-card">
+                <h2 class="auth-title">Soalan Akhir</h2>
+                <p class="auth-subtitle">Adakah anda telah mengenali kerjaya yang sesuai dengan anda?</p>
+
+                <div class="career-options">
+                    <button type="button" class="career-option-btn yes-btn" id="exploreYesBtn">
+                        <span class="option-icon">✦</span>
+                        <span class="option-text">YA</span>
+                        <span class="option-desc">Saya dah jumpa kerjaya yang sesuai</span>
+                    </button>
+
+                    <button type="button" class="career-option-btn no-btn" id="exploreNoBtn">
+                        <span class="option-icon">?</span>
+                        <span class="option-text">TIDAK</span>
+                        <span class="option-desc">Saya masih belum jumpa</span>
+                    </button>
+                </div>
+
+                <div class="error-msg" id="exploreQuestionError" style="text-align: center; margin-top: 1rem;"></div>
+            </div>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
