@@ -25,8 +25,8 @@ gdjs.FIRST_32PAGECode.GDTalkPromptObjects1= [];
 gdjs.FIRST_32PAGECode.GDTalkPromptObjects2= [];
 gdjs.FIRST_32PAGECode.GDNPCObjects1= [];
 gdjs.FIRST_32PAGECode.GDNPCObjects2= [];
-gdjs.FIRST_32PAGECode.GDNewSpriteObjects1= [];
-gdjs.FIRST_32PAGECode.GDNewSpriteObjects2= [];
+gdjs.FIRST_32PAGECode.GDbgggObjects1= [];
+gdjs.FIRST_32PAGECode.GDbgggObjects2= [];
 gdjs.FIRST_32PAGECode.GDNewSprite2Objects1= [];
 gdjs.FIRST_32PAGECode.GDNewSprite2Objects2= [];
 gdjs.FIRST_32PAGECode.GDNewSprite3Objects1= [];
@@ -121,13 +121,13 @@ if (isConditionTrue_0) {
 gdjs.FIRST_32PAGECode.mapOfGDgdjs_9546FIRST_959532PAGECode_9546GDEnemyObjects1Objects = Hashtable.newFrom({"Enemy": gdjs.FIRST_32PAGECode.GDEnemyObjects1});
 gdjs.FIRST_32PAGECode.mapOfGDgdjs_9546FIRST_959532PAGECode_9546GDPlayerObjects2Objects = Hashtable.newFrom({"Player": gdjs.FIRST_32PAGECode.GDPlayerObjects2});
 gdjs.FIRST_32PAGECode.mapOfGDgdjs_9546FIRST_959532PAGECode_9546GDEnemyObjects2Objects = Hashtable.newFrom({"Enemy": gdjs.FIRST_32PAGECode.GDEnemyObjects2});
-gdjs.FIRST_32PAGECode.asyncCallback23877508 = function (runtimeScene, asyncObjectsList) {
+gdjs.FIRST_32PAGECode.asyncCallback23999876 = function (runtimeScene, asyncObjectsList) {
 asyncObjectsList.restoreLocalVariablesContainers(gdjs.FIRST_32PAGECode.localVariables);
 {gdjs.evtTools.runtimeScene.replaceScene(runtimeScene, "START", false);
 }
 gdjs.FIRST_32PAGECode.localVariables.length = 0;
 }
-gdjs.FIRST_32PAGECode.idToCallbackMap.set(23877508, gdjs.FIRST_32PAGECode.asyncCallback23877508);
+gdjs.FIRST_32PAGECode.idToCallbackMap.set(23999876, gdjs.FIRST_32PAGECode.asyncCallback23999876);
 gdjs.FIRST_32PAGECode.eventsList2 = function(runtimeScene) {
 
 {
@@ -137,7 +137,7 @@ gdjs.FIRST_32PAGECode.eventsList2 = function(runtimeScene) {
 {
 const asyncObjectsList = new gdjs.LongLivedObjectsList();
 asyncObjectsList.backupLocalVariablesContainers(gdjs.FIRST_32PAGECode.localVariables);
-runtimeScene.getAsyncTasksManager().addTask(gdjs.evtTools.runtimeScene.wait(2), (runtimeScene) => (gdjs.FIRST_32PAGECode.asyncCallback23877508(runtimeScene, asyncObjectsList)), 23877508, asyncObjectsList);
+runtimeScene.getAsyncTasksManager().addTask(gdjs.evtTools.runtimeScene.wait(2), (runtimeScene) => (gdjs.FIRST_32PAGECode.asyncCallback23999876(runtimeScene, asyncObjectsList)), 23999876, asyncObjectsList);
 }
 }
 
@@ -178,10 +178,10 @@ let isConditionTrue_0 = false;
 isConditionTrue_0 = false;
 isConditionTrue_0 = gdjs.evtTools.runtimeScene.sceneJustBegins(runtimeScene);
 if (isConditionTrue_0) {
-gdjs.copyArray(runtimeScene.getObjects("Player"), gdjs.FIRST_32PAGECode.GDPlayerObjects1);
+gdjs.copyArray(runtimeScene.getObjects("bggg"), gdjs.FIRST_32PAGECode.GDbgggObjects1);
 {gdjs.evtTools.camera.setCameraZoom(runtimeScene, 4, "", 0);
 }
-{gdjs.evtTools.camera.centerCamera(runtimeScene, (gdjs.FIRST_32PAGECode.GDPlayerObjects1.length !== 0 ? gdjs.FIRST_32PAGECode.GDPlayerObjects1[0] : null), true, "", 0);
+{gdjs.evtTools.camera.centerCamera(runtimeScene, (gdjs.FIRST_32PAGECode.GDbgggObjects1.length !== 0 ? gdjs.FIRST_32PAGECode.GDbgggObjects1[0] : null), true, "", 0);
 }
 {gdjs.evtTools.sound.playMusicOnChannel(runtimeScene, "Upbeat Background Music For Videos The Drums.mp3", 0, true, 40, 1);
 }
@@ -435,7 +435,7 @@ for (var i = 0, k = 0, l = gdjs.FIRST_32PAGECode.GDPlayerObjects1.length;i<l;++i
 gdjs.FIRST_32PAGECode.GDPlayerObjects1.length = k;
 if (isConditionTrue_0) {
 isConditionTrue_0 = false;
-{isConditionTrue_0 = runtimeScene.getOnceTriggers().triggerOnce(23877364);
+{isConditionTrue_0 = runtimeScene.getOnceTriggers().triggerOnce(23999732);
 }
 }
 if (isConditionTrue_0) {
@@ -637,8 +637,8 @@ gdjs.FIRST_32PAGECode.GDTalkPromptObjects1.length = 0;
 gdjs.FIRST_32PAGECode.GDTalkPromptObjects2.length = 0;
 gdjs.FIRST_32PAGECode.GDNPCObjects1.length = 0;
 gdjs.FIRST_32PAGECode.GDNPCObjects2.length = 0;
-gdjs.FIRST_32PAGECode.GDNewSpriteObjects1.length = 0;
-gdjs.FIRST_32PAGECode.GDNewSpriteObjects2.length = 0;
+gdjs.FIRST_32PAGECode.GDbgggObjects1.length = 0;
+gdjs.FIRST_32PAGECode.GDbgggObjects2.length = 0;
 gdjs.FIRST_32PAGECode.GDNewSprite2Objects1.length = 0;
 gdjs.FIRST_32PAGECode.GDNewSprite2Objects2.length = 0;
 gdjs.FIRST_32PAGECode.GDNewSprite3Objects1.length = 0;
@@ -689,8 +689,8 @@ gdjs.FIRST_32PAGECode.GDTalkPromptObjects1.length = 0;
 gdjs.FIRST_32PAGECode.GDTalkPromptObjects2.length = 0;
 gdjs.FIRST_32PAGECode.GDNPCObjects1.length = 0;
 gdjs.FIRST_32PAGECode.GDNPCObjects2.length = 0;
-gdjs.FIRST_32PAGECode.GDNewSpriteObjects1.length = 0;
-gdjs.FIRST_32PAGECode.GDNewSpriteObjects2.length = 0;
+gdjs.FIRST_32PAGECode.GDbgggObjects1.length = 0;
+gdjs.FIRST_32PAGECode.GDbgggObjects2.length = 0;
 gdjs.FIRST_32PAGECode.GDNewSprite2Objects1.length = 0;
 gdjs.FIRST_32PAGECode.GDNewSprite2Objects2.length = 0;
 gdjs.FIRST_32PAGECode.GDNewSprite3Objects1.length = 0;
