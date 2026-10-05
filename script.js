@@ -6,6 +6,21 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // ============================================================
+    // TUTORIAL MODAL — Variables
+    // ============================================================
+    const TUTORIAL_SLIDES = [
+        'assets/tutorial/tutorial-1.png',
+        'assets/tutorial/tutorial-2.png',
+        'assets/tutorial/tutorial-3.png',
+        'assets/tutorial/tutorial-4.png',
+        'assets/tutorial/tutorial-5.png',
+        'assets/tutorial/tutorial-6.png'
+    ];
+
+    let tutorialIndex = 0;
+    let tutorialCallback = null;
+
+    // ============================================================
     // 1. SCENE MANAGEMENT
     // ============================================================
     const scenes = document.querySelectorAll('.scene');
@@ -314,10 +329,15 @@ document.addEventListener('DOMContentLoaded', () => {
             setCurrentUser(user);
 
             if (direction === 'YA') {
-                proceedToGameScene();
+                // YA → Tutorial → Game Scene
+                showGameTutorial(() => {
+                    proceedToGameScene();
+                });
             } else {
+                // TIDAK → Reason Question
                 proceedToReasonQuestion();
             }
+
         } catch (err) {
             console.error(err);
             alert("Ralat sambungan. Pastikan backend berjalan.");
@@ -380,7 +400,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 user.careerReasons = selectedReasons;
                 setCurrentUser(user);
-                proceedToGameScene();
+                
+                // Pergi ke Encouragement Scene
+                showScene('encouragementScene');
+
             } catch (err) {
                 console.error(err);
                 errEl.textContent = 'Ralat sambungan. Pastikan backend berjalan.';
@@ -474,6 +497,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // 9. GAME SCENE
     // ============================================================
     function proceedToGameScene() {
+        // Sediakan iframe game
+        const iframe = document.getElementById('gameIframe');
+        
+        // Load game HANYA bila masuk Game Scene
+        if (iframe && !iframe.src) {
+            const gameSrc = iframe.dataset.src;
+            if (gameSrc) {
+                iframe.src = gameSrc;
+                console.log("🎮 Loading game...");
+            }
+        }
+
         const journeyEl = document.getElementById('journeyBegin');
         const gameEl = document.getElementById('gdevelopGame');
         
@@ -481,20 +516,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (gameEl) gameEl.style.display = 'none';
 
         const user = getCurrentUser();
-        if (user && user.imkCode) {
-            console.log("User dah ada kod IMK, terus ke Code Scene");
-            proceedToCodeScene(user.imkCode);
-            return;
-        }
         const textEl = document.getElementById('journeyText');
         if (textEl && user) {
             textEl.textContent = `Perjalanan anda untuk meneroka kerjaya impian bermula sekarang. Teruskan melangkah, jangan pernah berhenti!`;
-        }
-
-        // Set iframe src dengan username sebagai parameter
-        const iframe = document.getElementById('gameIframe');
-        if (iframe && user) {
-            iframe.src = `assets/game/index.html?username=${encodeURIComponent(user.username)}`;
         }
 
         showScene('gameScene');
@@ -2732,5 +2756,170 @@ document.addEventListener('DOMContentLoaded', () => {
             orig();
             setTimeout(loadFavourites, 100);
         };
+    }
+    // ============================================================
+    // TUTORIAL MODAL — Fungsi
+    // ============================================================
+    const tutorialOverlay = document.getElementById('tutorialOverlay');
+    const tutorialImage = document.getElementById('tutorialImage');
+    const tutorialPrevBtn = document.getElementById('tutorialPrevBtn');
+    const tutorialNextBtn = document.getElementById('tutorialNextBtn');
+    const tutorialSkipBtn = document.getElementById('tutorialSkipBtn');
+    const tutorialStartBtn = document.getElementById('tutorialStartBtn');
+    const tutorialDots = document.getElementById('tutorialDots');
+    const tutorialCurrent = document.getElementById('tutorialCurrent');
+    const tutorialTotal = document.getElementById('tutorialTotal');
+
+    // Buka tutorial
+    window.showGameTutorial = function(onComplete) {
+        tutorialCallback = onComplete;
+        tutorialIndex = 0;
+
+        // Setup dots
+        if (tutorialDots) {
+            tutorialDots.innerHTML = '';
+            TUTORIAL_SLIDES.forEach((_, i) => {
+                const dot = document.createElement('button');
+                dot.className = 'tutorial-dot';
+                dot.type = 'button';
+                dot.addEventListener('click', () => goToTutorialSlide(i));
+                tutorialDots.appendChild(dot);
+            });
+        }
+
+        if (tutorialTotal) tutorialTotal.textContent = TUTORIAL_SLIDES.length;
+
+        updateTutorialUI();
+        tutorialOverlay.classList.add('open');
+    };
+
+    // Update UI
+    function updateTutorialUI() {
+        if (tutorialImage) {
+            tutorialImage.classList.add('fading');
+            setTimeout(() => {
+                tutorialImage.src = TUTORIAL_SLIDES[tutorialIndex];
+                tutorialImage.classList.remove('fading');
+            }, 150);
+        }
+
+        if (tutorialCurrent) tutorialCurrent.textContent = tutorialIndex + 1;
+
+        // Update dots
+        document.querySelectorAll('.tutorial-dot').forEach((dot, i) => {
+            dot.classList.toggle('active', i === tutorialIndex);
+        });
+
+        // Prev/Next
+        if (tutorialPrevBtn) tutorialPrevBtn.disabled = tutorialIndex === 0;
+        if (tutorialNextBtn) {
+            tutorialNextBtn.style.display = tutorialIndex === TUTORIAL_SLIDES.length - 1 ? 'none' : 'flex';
+        }
+
+        // Start button hanya muncul di slide terakhir
+        if (tutorialStartBtn) {
+            tutorialStartBtn.style.display = tutorialIndex === TUTORIAL_SLIDES.length - 1 ? 'block' : 'none';
+        }
+    }
+
+    function goToTutorialSlide(i) {
+        if (i < 0 || i >= TUTORIAL_SLIDES.length) return;
+        tutorialIndex = i;
+        updateTutorialUI();
+    }
+
+    function nextTutorialSlide() {
+        if (tutorialIndex < TUTORIAL_SLIDES.length - 1) {
+            tutorialIndex++;
+            updateTutorialUI();
+        }
+    }
+
+    function prevTutorialSlide() {
+        if (tutorialIndex > 0) {
+            tutorialIndex--;
+            updateTutorialUI();
+        }
+    }
+
+    // Tutup tutorial & jalankan callback
+    function closeTutorial() {
+        tutorialOverlay.classList.remove('open');
+        const cb = tutorialCallback;
+        tutorialCallback = null;
+        if (cb) cb();
+    }
+
+    // Event listeners
+    if (tutorialNextBtn) tutorialNextBtn.addEventListener('click', nextTutorialSlide);
+    if (tutorialPrevBtn) tutorialPrevBtn.addEventListener('click', prevTutorialSlide);
+    if (tutorialSkipBtn) tutorialSkipBtn.addEventListener('click', closeTutorial);
+    if (tutorialStartBtn) tutorialStartBtn.addEventListener('click', closeTutorial);
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        if (!tutorialOverlay || !tutorialOverlay.classList.contains('open')) return;
+        
+        if (e.key === 'ArrowRight') nextTutorialSlide();
+        if (e.key === 'ArrowLeft') prevTutorialSlide();
+        if (e.key === 'Escape') closeTutorial();
+    });
+    // ============================================================
+    // ENCOURAGEMENT SCENE — Button Teruskan
+    // ============================================================
+    const encouragementContinueBtn = document.getElementById('encouragementContinueBtn');
+    if (encouragementContinueBtn) {
+        encouragementContinueBtn.addEventListener('click', () => {
+            console.log("✅ User teruskan dari encouragement scene");
+            // Tunjuk tutorial dulu, kemudian Game Scene
+            showGameTutorial(() => {
+                proceedToGameScene();
+            });
+        });
+    }
+    // ============================================================
+    // STOP GAME — Bila keluar dari Game Scene
+    // ============================================================
+    window.stopGame = function() {
+        const iframe = document.getElementById('gameIframe');
+        if (iframe && iframe.src) {
+            // Reset src untuk stop audio/video
+            iframe.src = 'about:blank';
+            console.log("🛑 Game stopped");
+        }
+    };
+
+    // Detect bila scene berubah — kalau bukan gameScene, stop game
+    const originalShowScene = window.showScene;
+    window.showScene = function(sceneId) {
+        const iframe = document.getElementById('gameIframe');
+        
+        // Kalau keluar dari gameScene dan iframe ada src, stop game
+        if (sceneId !== 'gameScene' && iframe && iframe.src && !iframe.src.includes('about:blank')) {
+            // Delay sikit supaya transition smooth
+            setTimeout(() => {
+                iframe.src = 'about:blank';
+                console.log("🛑 Game stopped - keluar dari Game Scene");
+            }, 500);
+        }
+        
+        // Panggil fungsi asal
+        originalShowScene(sceneId);
+    };
+    // ============================================================
+    // GAME SCENE — Button "Cara Guna" (Replay Tutorial)
+    // ============================================================
+    const gameTutorialBtn = document.getElementById('gameTutorialBtn');
+    if (gameTutorialBtn) {
+        gameTutorialBtn.addEventListener('click', () => {
+            console.log("📖 User nak tengok tutorial semula");
+            
+            // Buka tutorial tanpa proceed ke mana-mana
+            // Callback kosong — bila tutup, user kekal di Game Scene
+            showGameTutorial(() => {
+                console.log("✅ Tutorial ditutup — user kekal di Game Scene");
+                // Tak buat apa-apa — user tetap di Game Scene
+            });
+        });
     }
 });

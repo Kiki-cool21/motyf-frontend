@@ -17,6 +17,48 @@
 
     <div class="app-container">
         <!-- =========================================
+             TUTORIAL GAME MODAL
+             ========================================= -->
+        <div class="tutorial-overlay" id="tutorialOverlay">
+            <div class="tutorial-container">
+                <div class="tutorial-header">
+                    <div class="tutorial-title">
+                        <span class="tutorial-icon">🎮</span>
+                        <span>Cara Main Game IMK</span>
+                    </div>
+                    <button type="button" class="tutorial-skip" id="tutorialSkipBtn">
+                        Skip →
+                    </button>
+                </div>
+
+                <div class="tutorial-slide-wrapper">
+                    <img 
+                        id="tutorialImage" 
+                        class="tutorial-image" 
+                        src="assets/tutorial/tutorial-1.png" 
+                        alt="Tutorial">
+
+                    <button type="button" class="tutorial-nav tutorial-prev" id="tutorialPrevBtn">
+                        ‹
+                    </button>
+                    <button type="button" class="tutorial-nav tutorial-next" id="tutorialNextBtn">
+                        ›
+                    </button>
+                </div>
+
+                <div class="tutorial-progress">
+                    <div class="tutorial-dots" id="tutorialDots"></div>
+                    <div class="tutorial-counter">
+                        <span id="tutorialCurrent">1</span> / <span id="tutorialTotal">6</span>
+                    </div>
+                </div>
+
+                <button type="button" class="tutorial-start-btn" id="tutorialStartBtn" style="display: none;">
+                    🚀 MULA MAIN SEKARANG
+                </button>
+            </div>
+        </div>
+        <!-- =========================================
              GLOBAL BRAND LOGO (Muncul di semua scene)
              ========================================= -->
         <div class="global-brand-logo" id="globalBrandLogo" onclick="showScene('landingScene')">MoTYF+</div>
@@ -216,6 +258,28 @@
             <footer class="bottom-tagline">
                 <span>— beyond the limits —</span>
             </footer>
+        </section>
+        <!-- =========================================
+             SCENE: ENCOURAGEMENT (Untuk User TIDAK)
+             ========================================= -->
+        <section id="encouragementScene" class="scene">
+            <div class="encouragement-container">
+                <div class="encouragement-icon">✨</div>
+
+                <h2 class="encouragement-title">Tidak Mengapa!</h2>
+
+                <p class="encouragement-text" id="encouragementText">
+                    Mari kami bantu untuk mengetahui minat kecenderungan anda
+                </p>
+
+                <p class="encouragement-call">
+                    Ayuh kita terokai kerjaya yang bersesuaian dengan minat anda! 🚀
+                </p>
+
+                <button type="button" class="encouragement-btn" id="encouragementContinueBtn">
+                    TERUSKAN →
+                </button>
+            </div>
         </section>
 
         <!-- SCENE 2: LOGIN SCENE -->
@@ -419,6 +483,14 @@
         <!-- SCENE 7: GAME SCENE -->
          <section id="gameScene" class="scene">
             <div class="game-container">
+                <div class="game-top-buttons">
+                    <button type="button" class="edit-back-btn" onclick="showScene('landingScene')">← Back</button>
+                    <button type="button" class="tutorial-help-btn" id="gameTutorialBtn">
+                        📖 Cara Main ?
+                    </button>
+                </div>
+                
+                <!-- ... rest of game scene ... -->
                 <button type="button" class="back-btn" onclick="showScene('landingScene')">← Back</button>
 
                 <div id="journeyBegin" class="journey-begin">
@@ -440,7 +512,7 @@
                     <div class="iframe-wrapper">
                         <iframe 
                             id="gameIframe"
-                            src="assets/game/index.html" 
+                            data-src="assets/game/index.html" 
                             frameborder="0"
                             allowfullscreen
                             title="MoTYF+ Adventure Game">
