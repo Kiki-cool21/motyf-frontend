@@ -4641,3 +4641,41 @@ body {
         width: 100%;
     }
 }
+/* =========================================
+   GAME SCENE — Fullscreen Mode
+   ========================================= */
+#gdevelopGame:fullscreen,
+#gdevelopGame:-webkit-full-screen {
+    background: #000;
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+}
+
+#gdevelopGame:fullscreen .iframe-wrapper,
+#gdevelopGame:-webkit-full-screen .iframe-wrapper {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    aspect-ratio: auto;
+    border-radius: 0;
+}
+
+#gdevelopGame:fullscreen iframe,
+#gdevelopGame:-webkit-full-screen iframe {
+    width: 100%;
+    height: 100%;
+}
+
+#gdevelopGame:fullscreen .game-title,
+#gdevelopGame:fullscreen .game-desc,
+#gdevelopGame:fullscreen .auth-submit-btn,
+#gdevelopGame:-webkit-full-screen .game-title,
+#gdevelopGame:-webkit-full-screen .game-desc,
+#gdevelopGame:-webkit-full-screen .auth-submit-btn {
+    display: none !important;
+}

@@ -484,9 +484,14 @@
          <section id="gameScene" class="scene">
             <div class="game-container">
                 <div class="game-top-buttons">
-                    <button type="button" class="edit-back-btn" onclick="showScene('landingScene')">← Back</button>
+                    <button type="button" class="edit-back-btn" onclick="showScene('landingScene')">
+                        ← Back
+                    </button>
                     <button type="button" class="tutorial-help-btn" id="gameTutorialBtn">
-                        📖 Cara Main ?
+                        📖 Cara Guna
+                    </button>
+                    <button type="button" class="tutorial-help-btn" id="gameFullscreenBtn">
+                        ⛶ Fullscreen
                     </button>
                 </div>
                 
@@ -512,10 +517,12 @@
                     <div class="iframe-wrapper">
                         <iframe 
                             id="gameIframe"
-                            data-src="assets/game/index.html" 
+                            data-src="assets/game/index.html"
                             frameborder="0"
+                            allow="fullscreen; autoplay"
                             allowfullscreen
-                            title="MoTYF+ Adventure Game">
+                            loading="lazy"
+                            title="MoTYF+ IMK Game">
                         </iframe>
                     </div>
                     
