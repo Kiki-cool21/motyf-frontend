@@ -5,6 +5,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+
     // ============================================================
     // TUTORIAL MODAL — Variables
     // ============================================================
@@ -164,6 +165,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (journeyBtn) {
         journeyBtn.addEventListener('click', () => {
+           
+
+
             const user = getCurrentUser();
             if (!user) {
                 showScene('loginScene');
@@ -496,44 +500,90 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================================
     // 9. GAME SCENE
     // ============================================================
-    function proceedToGameScene() {
-        const iframe = document.getElementById('gameIframe');
-        
-        // Load game
-        if (iframe && !iframe.src) {
-            const gameSrc = iframe.dataset.src;
-            if (gameSrc) {
-                iframe.src = gameSrc;
-                console.log("🎮 Loading game...");
-            }
-        }
+function proceedToGameScene() {
+    const iframe = document.getElementById('gameIframe');
+    const loadingEl = document.getElementById('gameLoading');
+    const gameEl = document.getElementById('gdevelopGame');
+    const percentEl = document.getElementById('loadPercent');
+    const iframeWrapper = document.querySelector('.iframe-wrapper');
+    const journeyEl = document.getElementById('journeyBegin');
+    
+    console.log("🎮 proceedToGameScene dipanggil");
 
-        const journeyEl = document.getElementById('journeyBegin');
-        const gameEl = document.getElementById('gdevelopGame');
-        
-        if (journeyEl) journeyEl.style.display = 'flex';
-        if (gameEl) gameEl.style.display = 'none';
+    // ============================================================
+    // STEP 1: Tunjuk Cinematic, sembunyi Game (paksa dengan !important)
+    // ============================================================
+    if (journeyEl) {
+        journeyEl.style.setProperty('display', 'flex', 'important');
+    }
+    if (gameEl) {
+        gameEl.style.setProperty('display', 'none', 'important');
+    }
+    
+    // Setup loading state
+    if (loadingEl) loadingEl.style.display = 'flex';
+    if (iframeWrapper) iframeWrapper.classList.add('loading');
+    if (percentEl) percentEl.textContent = '0%';
 
-        const user = getCurrentUser();
-        const textEl = document.getElementById('journeyText');
-        if (textEl && user) {
-            textEl.textContent = `Perjalanan anda untuk meneroka kerjaya impian bermula sekarang. Teruskan melangkah, jangan pernah berhenti!`;
-        }
-
-        showScene('gameScene');
-
-        // Selepas 3 saat cinematic, tunjuk game + auto fullscreen
-        setTimeout(() => {
-            if (journeyEl) journeyEl.style.display = 'none';
-            if (gameEl) gameEl.style.display = 'flex';
-
-            // Auto fullscreen selepas transition sikit
-            setTimeout(() => {
-                enterGameFullscreen();
-            }, 800);
-        }, 3000);
+    const user = getCurrentUser();
+    const textEl = document.getElementById('journeyText');
+    if (textEl && user) {
+        textEl.textContent = `Perjalanan anda untuk meneroka kerjaya impian bermula sekarang. Teruskan melangkah, jangan pernah berhenti!`;
     }
 
+    showScene('gameScene');
+
+    // ============================================================
+    // STEP 2: Selepas 3 saat → tukar Cinematic ke Game
+    // ============================================================
+    setTimeout(() => {
+        console.log("⏰ 3 saat tamat — tukar ke game");
+        
+        // Sembunyikan cinematic (paksa dengan !important)
+        if (journeyEl) {
+            journeyEl.style.setProperty('display', 'none', 'important');
+        }
+        
+        // Tunjuk game (paksa dengan !important)
+        if (gameEl) {
+            gameEl.style.setProperty('display', 'flex', 'important');
+        }
+        
+        // Load game
+        if (iframe && (!iframe.src || iframe.src.includes('about:blank'))) {
+            const gameSrc = iframe.dataset.src;
+            if (gameSrc) {
+                console.log("🎮 Loading game...");
+                
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    if (progress < 90) {
+                        progress += Math.random() * 8;
+                        if (progress > 90) progress = 90;
+                        if (percentEl) percentEl.textContent = Math.floor(progress) + '%';
+                    }
+                }, 300);
+                
+                iframe.onload = () => {
+                    console.log("✅ Game loaded!");
+                    clearInterval(progressInterval);
+                    if (percentEl) percentEl.textContent = '100%';
+                    
+                    setTimeout(() => {
+                        if (loadingEl) loadingEl.style.display = 'none';
+                        if (iframeWrapper) iframeWrapper.classList.remove('loading');
+                    }, 500);
+                };
+                
+                iframe.src = gameSrc;
+            }
+        } else if (iframe && iframe.src) {
+            // Game dah load
+            if (loadingEl) loadingEl.style.display = 'none';
+            if (iframeWrapper) iframeWrapper.classList.remove('loading');
+        }
+    }, 3000);
+}
     // Terima mesej dari GDevelop
     window.addEventListener('message', (event) => {
         const data = event.data;
@@ -2776,6 +2826,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Buka tutorial
     window.showGameTutorial = function(onComplete) {
+
         tutorialCallback = onComplete;
         tutorialIndex = 0;
 
@@ -2858,7 +2909,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tutorialNextBtn) tutorialNextBtn.addEventListener('click', nextTutorialSlide);
     if (tutorialPrevBtn) tutorialPrevBtn.addEventListener('click', prevTutorialSlide);
     if (tutorialSkipBtn) tutorialSkipBtn.addEventListener('click', closeTutorial);
-    if (tutorialStartBtn) tutorialStartBtn.addEventListener('click', closeTutorial);
+    if (tutorialStartBtn) {
+        tutorialStartBtn.addEventListener('click', () => {
+            closeTutorial();
+        });
+    }
 
     // Keyboard navigation
     document.addEventListener('keydown', (e) => {
@@ -2896,20 +2951,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Detect bila scene berubah — kalau bukan gameScene, stop game
     const originalShowScene = window.showScene;
     window.showScene = function(sceneId) {
-        const iframe = document.getElementById('gameIframe');
-        
-        // Kalau keluar dari gameScene dan iframe ada src, stop game
-        if (sceneId !== 'gameScene' && iframe && iframe.src && !iframe.src.includes('about:blank')) {
-            // Delay sikit supaya transition smooth
-            setTimeout(() => {
-                iframe.src = 'about:blank';
-                console.log("🛑 Game stopped - keluar dari Game Scene");
-            }, 500);
+    const iframe = document.getElementById('gameIframe');
+    
+    // Reset iframe bila keluar Game Scene (stop audio + video)
+    if (sceneId !== 'gameScene' && iframe) {
+        if (iframe.src && !iframe.src.includes('about:blank')) {
+            iframe.src = 'about:blank';
+            console.log("🛑 Game iframe reset (audio stopped)");
         }
-        
-        // Panggil fungsi asal
-        originalShowScene(sceneId);
-    };
+    }
+    
+    originalShowScene(sceneId);
+};
     // ============================================================
     // GAME SCENE — Button "Cara Guna" (Replay Tutorial)
     // ============================================================
@@ -2949,67 +3002,6 @@ document.addEventListener('DOMContentLoaded', () => {
             preloadGame();
         }
     }, 2000);
-    // ============================================================
-    // AUTO FULLSCREEN untuk Game Scene
-    // ============================================================
-    function enterGameFullscreen() {
-        const gameEl = document.getElementById('gdevelopGame');
-        
-        if (!gameEl) return;
 
-        // Semak kalau browser support
-        const requestFS = 
-            gameEl.requestFullscreen ||
-            gameEl.webkitRequestFullscreen ||
-            gameEl.mozRequestFullScreen ||
-            gameEl.msRequestFullscreen;
 
-        if (!requestFS) {
-            console.warn("⚠️ Browser tak support fullscreen");
-            return;
-        }
-
-        // Request fullscreen dengan try/catch
-        try {
-            const promise = requestFS.call(gameEl);
-            
-            if (promise && promise.then) {
-                promise
-                    .then(() => {
-                        console.log("✅ Fullscreen mode aktif");
-                    })
-                    .catch((err) => {
-                        console.warn("⚠️ Fullscreen request ditolak:", err.message);
-                        // Fallback: continue tanpa fullscreen (takkan block user)
-                    });
-            }
-        } catch (err) {
-            console.warn("⚠️ Fullscreen error:", err);
-        }
-    }
-
-    // ============================================================
-    // Handle bila user exit fullscreen
-    // ============================================================
-    document.addEventListener('fullscreenchange', () => {
-        if (!document.fullscreenElement) {
-            console.log("🚪 User exit fullscreen");
-            // Optional: boleh buat sesuatu bila exit
-        }
-    });
-
-    // ============================================================
-    // Tambah button "Fullscreen" untuk toggle manual
-    // ============================================================
-    const gameFullscreenBtn = document.getElementById('gameFullscreenBtn');
-    if (gameFullscreenBtn) {
-        gameFullscreenBtn.addEventListener('click', () => {
-            const gameEl = document.getElementById('gdevelopGame');
-            if (!document.fullscreenElement) {
-                enterGameFullscreen();
-            } else {
-                document.exitFullscreen();
-            }
-        });
-    }
 });

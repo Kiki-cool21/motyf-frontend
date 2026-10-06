@@ -490,13 +490,9 @@
                     <button type="button" class="tutorial-help-btn" id="gameTutorialBtn">
                         📖 Cara Guna
                     </button>
-                    <button type="button" class="tutorial-help-btn" id="gameFullscreenBtn">
-                        ⛶ Fullscreen
-                    </button>
                 </div>
                 
                 <!-- ... rest of game scene ... -->
-                <button type="button" class="back-btn" onclick="showScene('landingScene')">← Back</button>
 
                 <div id="journeyBegin" class="journey-begin">
                     <div class="journey-icon">✦</div>
@@ -510,26 +506,31 @@
                     <p class="journey-subtext">Bersedia untuk pengembaraan seterusnya...</p>
                 </div>
 
-                <div id="gdevelopGame" class="gdevelop-game" style="display: none;">
+                <div id="gdevelopGame" class="gdevelop-game" style="display: none;"></div>
                     <h2 class="game-title">Jom Main!</h2>
-                    <p class="game-desc">Selesaikan misi ini untuk teruskan perjalanan anda.</p>
+                    <p class="game-desc">Selesaikan Inventori Minat Kerjaya (IMK) untuk teruskan perjalanan anda.</p>
                     
-                    <div class="iframe-wrapper">
-                        <iframe 
-                            id="gameIframe"
-                            data-src="assets/game/index.html"
-                            frameborder="0"
-                            allow="fullscreen; autoplay"
-                            allowfullscreen
-                            loading="lazy"
-                            title="MoTYF+ IMK Game">
-                        </iframe>
+                    <!-- LOADING INDICATOR -->
+                    <div class="game-loading" id="gameLoading">
+                        <div class="loading-spinner"></div>
+                        <p class="loading-text">Memuatkan game... <strong id="loadPercent">0%</strong></p>
+                        <p class="loading-hint">Sila tunggu sebentar ⏳</p>
                     </div>
                     
+                <div class="iframe-wrapper">
+                    <iframe 
+                        id="gameIframe"
+                        data-src="assets/game/index.html"
+                        frameborder="0"
+                        allow="fullscreen; autoplay"
+                        allowfullscreen
+                        loading="lazy"
+                        title="MoTYF+ IMK Game">
+                    </iframe>
+                </div>
                     <button type="button" class="auth-submit-btn" id="continueToCodeBtn" style="margin-top: 1.5rem;">
                         TERUSKAN →
                     </button>
-                </div>
 
             </div>
         </section>
