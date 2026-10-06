@@ -45,9 +45,11 @@ gdjs.ENDINGCode.GDDoorObjects1= [];
 gdjs.ENDINGCode.GDDoorObjects2= [];
 gdjs.ENDINGCode.GDLivesObjects1= [];
 gdjs.ENDINGCode.GDLivesObjects2= [];
+gdjs.ENDINGCode.GDE_9595buttonObjects1= [];
+gdjs.ENDINGCode.GDE_9595buttonObjects2= [];
 
 
-gdjs.ENDINGCode.userFunc0x182ffe0 = function GDJSInlineCode(runtimeScene) {
+gdjs.ENDINGCode.userFunc0xbe5888 = function GDJSInlineCode(runtimeScene) {
 "use strict";
 // Kira skor dan kod Holland
 let scores = [
@@ -103,7 +105,7 @@ gdjs.ENDINGCode.eventsList0 = function(runtimeScene) {
 {
 
 
-gdjs.ENDINGCode.userFunc0x182ffe0(runtimeScene);
+gdjs.ENDINGCode.userFunc0xbe5888(runtimeScene);
 
 }
 
@@ -174,6 +176,8 @@ gdjs.ENDINGCode.GDDoorObjects1.length = 0;
 gdjs.ENDINGCode.GDDoorObjects2.length = 0;
 gdjs.ENDINGCode.GDLivesObjects1.length = 0;
 gdjs.ENDINGCode.GDLivesObjects2.length = 0;
+gdjs.ENDINGCode.GDE_9595buttonObjects1.length = 0;
+gdjs.ENDINGCode.GDE_9595buttonObjects2.length = 0;
 
 gdjs.ENDINGCode.eventsList1(runtimeScene);
 gdjs.ENDINGCode.GDNewPanelSpriteObjects1.length = 0;
@@ -220,6 +224,8 @@ gdjs.ENDINGCode.GDDoorObjects1.length = 0;
 gdjs.ENDINGCode.GDDoorObjects2.length = 0;
 gdjs.ENDINGCode.GDLivesObjects1.length = 0;
 gdjs.ENDINGCode.GDLivesObjects2.length = 0;
+gdjs.ENDINGCode.GDE_9595buttonObjects1.length = 0;
+gdjs.ENDINGCode.GDE_9595buttonObjects2.length = 0;
 
 
 return;
