@@ -1698,19 +1698,23 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        careers.forEach((career, i) => {
-            const card = document.createElement('div');
-            card.className = 'career-card-code';
-            card.style.animationDelay = `${i * 0.05}s`;
-            card.innerHTML = `
-                <div class="career-card-icon">${career.icon}</div>
-                <div class="career-card-name">${career.name}</div>
-                <div class="career-card-code-badge">${career.codes}</div>
-                <div class="career-card-cluster">${career.cluster.split(' & ')[0]}</div>
-            `;
-            card.addEventListener('click', () => window.openCareerModal(career));
-            container.appendChild(card);
+    careers.forEach((career, i) => {
+        const card = document.createElement('div');
+        card.className = 'career-card-code';
+        card.style.animationDelay = `${i * 0.05}s`;
+        card.innerHTML = `
+            <div class="career-card-icon">${career.icon}</div>
+            <div class="career-card-name">${career.name}</div>
+            <div class="career-card-code-badge">${career.codes}</div>
+            <div class="career-card-cluster">${career.cluster.split(' & ')[0]}</div>
+        `;
+        
+        card.addEventListener('click', () => {
+            window.openCareerModal(career);
         });
+        
+        container.appendChild(card);
+    });
     }
     // ============================================================
     // 11. TERUSKAN BUTTON (Fallback handler)
@@ -3515,4 +3519,58 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+    // ============================================================
+    // SOLUSI 3: FINISH EXPLORE BUTTON
+    // ============================================================
+    const finishExploreBtn = document.getElementById('finishExploreBtn');
+    if (finishExploreBtn) {
+        finishExploreBtn.addEventListener('click', () => {
+            console.log("🏁 User klik Selesai Terokai — tunjuk Soalan Akhir");
+            showScene('exploreQuestionScene');
+        });
+    }
+
+
+
+
+
+
+    // ============================================================
+    // SOLUSI 2: EXIT INTENT DETECTION
+    // ============================================================
+    let exitIntentTriggered = false;
+
+    // Desktop — detect mouse keluar dari atas viewport
+    document.addEventListener('mouseout', (e) => {
+        if (e.clientY < 10 && !exitIntentTriggered) {
+            const currentUser = getCurrentUser();
+            const activeScene = document.querySelector('.scene.active');
+            
+            if (activeScene && activeScene.id === 'codeScene' 
+                && currentUser && !currentUser.foundCareerFromExplore) {
+                
+                exitIntentTriggered = true;
+                console.log("🚪 Exit intent — tunjuk Soalan Akhir");
+                showScene('exploreQuestionScene');
+            }
+        }
+    });
+
+    // Mobile — detect bila user tekan back button browser
+    window.addEventListener('popstate', () => {
+        const currentUser = getCurrentUser();
+        const activeScene = document.querySelector('.scene.active');
+        
+        if (activeScene && activeScene.id === 'codeScene' 
+            && currentUser && !currentUser.foundCareerFromExplore) {
+            
+            console.log("📱 Back button — tunjuk Soalan Akhir");
+            showScene('exploreQuestionScene');
+            // Push state balik supaya browser tak keluar
+            history.pushState(null, '', location.href);
+        }
+    });
+
+    // Setup popstate untuk mobile
+    history.pushState(null, '', location.href);
 });
