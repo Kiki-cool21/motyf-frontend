@@ -485,6 +485,121 @@
             .stats-grid { grid-template-columns: 1fr; }
             .stat-card .stat-value { font-size: 1.3rem; }
         }
+        /* =========================================
+           FEEDBACK SECTION (Pengguna Luar)
+           ========================================= */
+        .feedback-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .feedback-card {
+            background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
+            border: 1px solid #e9ecef;
+            border-left: 4px solid #3a7bd5;
+            border-radius: 12px;
+            padding: 1.2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .feedback-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(58, 123, 213, 0.15);
+            border-left-color: #ec4899;
+        }
+
+        .feedback-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            margin-bottom: 0.9rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .feedback-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+        }
+
+        .feedback-user-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .feedback-username {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .feedback-date {
+            font-size: 0.7rem;
+            color: #888;
+            font-style: italic;
+            margin-top: 2px;
+        }
+
+        .feedback-rating {
+            flex-shrink: 0;
+        }
+
+        .feedback-rating .stars-display {
+            font-size: 0.9rem;
+            letter-spacing: 0;
+        }
+
+        .feedback-comment {
+            font-size: 0.88rem;
+            color: #555;
+            font-style: italic;
+            line-height: 1.5;
+            padding: 0.5rem 0.7rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 3px solid #ec4899;
+            word-wrap: break-word;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .feedback-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .feedback-avatar {
+                width: 36px;
+                height: 36px;
+                font-size: 0.95rem;
+            }
+            
+            .feedback-username {
+                font-size: 0.85rem;
+            }
+            
+            .feedback-comment {
+                font-size: 0.82rem;
+            }
+        }
         
     </style>
 </head>
@@ -632,7 +747,6 @@
                                         <th>Kod IMK</th>
                                         <th>Jumpa Kerjaya?</th>
                                         <th>Rating ⭐</th>
-                                        <th>Komen</th>
                                         <th>Tarikh Daftar</th>
                                     </tr>
                                 </thead>
@@ -660,10 +774,6 @@
                             ? `<span class="stars-display">${'★'.repeat(s.feedbackRating)}<span class="stars-empty">${'☆'.repeat(5 - s.feedbackRating)}</span></span>`
                             : '-';
 
-                        const commentDisplay = s.feedbackComment
-                            ? `<span class="comment-text" title="${s.feedbackComment.replace(/"/g, '&quot;')}">${s.feedbackComment.length > 40 ? s.feedbackComment.substring(0, 40) + '...' : s.feedbackComment}</span>`
-                            : '-';
-
                         const date = s.createdAt
                             ? new Date(s.createdAt).toLocaleDateString('ms-MY')
                             : '-';
@@ -676,7 +786,6 @@
                                 <td>${imkBadge}</td>
                                 <td>${exploreBadge}</td>
                                 <td>${ratingBadge}</td>
-                                <td>${commentDisplay}</td>
                                 <td>${date}</td>
                             </tr>
                         `;
@@ -713,7 +822,53 @@
                         )}
                     </div>
                 `;
+                // =========================================
+                // FEEDBACK SECTION (Pengguna Luar)
+                // =========================================
+                const feedbackUsers = students.filter(s => s.feedbackComment || s.feedbackRating);
+                
+                if (feedbackUsers.length > 0) {
+                    html += '<h2>💬 Maklum Balas Pengguna Luar</h2>';
+                    html += '<div class="feedback-grid">';
+                    
+                    feedbackUsers.forEach(f => {
+                        const stars = f.feedbackRating 
+                            ? `${'★'.repeat(f.feedbackRating)}<span class="stars-empty">${'☆'.repeat(5 - f.feedbackRating)}</span>`
+                            : 'Tiada rating';
+                        
+                        const comment = f.feedbackComment || '<em style="opacity: 0.6;">Tiada komen</em>';
+                        
+                        const date = f.feedbackAt
+                            ? new Date(f.feedbackAt).toLocaleDateString('ms-MY', { 
+                                day: 'numeric', 
+                                month: 'long', 
+                                year: 'numeric' 
+                            })
+                            : '-';
 
+                        const avatarLetter = f.username.charAt(0).toUpperCase();
+
+                        html += `
+                            <div class="feedback-card">
+                                <div class="feedback-card-header">
+                                    <div class="feedback-avatar">${avatarLetter}</div>
+                                    <div class="feedback-user-info">
+                                        <div class="feedback-username">${f.username}</div>
+                                        <div class="feedback-date">${date}</div>
+                                    </div>
+                                    <div class="feedback-rating">
+                                        <span class="stars-display">${stars}</span>
+                                    </div>
+                                </div>
+                                <div class="feedback-comment">
+                                    "${comment}"
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div>';
+                }
                 // =========================================
                 // CHARTS LAMA (Horizontal Bar)
                 // =========================================
