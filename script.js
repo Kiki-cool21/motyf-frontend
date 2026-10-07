@@ -833,8 +833,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getRiasecMeaning(code) {
         const meanings = {
-            'R': 'Realistic', 'I': 'Investigative', 'A': 'Artistic',
-            'S': 'Social', 'E': 'Enterprising', 'C': 'Conventional'
+            'R': 'Realistik', 'I': 'Investigatif', 'A': 'Artistik',
+            'S': 'Sosial', 'E': 'Enterprising', 'K': 'Konvensional'
 
         };
         return code.split('').map(l => meanings[l] || l).join(' · ');
