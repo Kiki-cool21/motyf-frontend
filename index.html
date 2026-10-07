@@ -63,6 +63,52 @@
              ========================================= -->
         <div class="global-brand-logo" id="globalBrandLogo" onclick="showScene('landingScene')">MoTYF+</div>
         <!-- =========================================
+             FEEDBACK MODAL (Pengguna Luar)
+             ========================================= -->
+        <div class="feedback-overlay" id="feedbackOverlay">
+            <div class="feedback-container">
+                <div class="feedback-icon">💬</div>
+                <h2 class="feedback-title">Maklum Balas Anda</h2>
+                <p class="feedback-subtitle">Terima kasih kerana menggunakan MoTYF+</p>
+
+                <!-- Star Rating -->
+                <div class="feedback-section">
+                    <label class="feedback-label">
+                        Berapa tahap keberkesanan laman web ini kepada anda?
+                    </label>
+                    <div class="star-rating" id="starRating">
+                        <button type="button" class="star" data-value="1">★</button>
+                        <button type="button" class="star" data-value="2">★</button>
+                        <button type="button" class="star" data-value="3">★</button>
+                        <button type="button" class="star" data-value="4">★</button>
+                        <button type="button" class="star" data-value="5">★</button>
+                    </div>
+                    <p class="rating-text" id="ratingText">Pilih rating</p>
+                </div>
+
+                <!-- Comment -->
+                <div class="feedback-section">
+                    <label class="feedback-label">
+                        Komen (optional)
+                    </label>
+                    <textarea 
+                        id="feedbackComment" 
+                        class="feedback-textarea" 
+                        placeholder="Beritahu kami pendapat anda..."
+                        rows="3"></textarea>
+                </div>
+
+                <div class="error-msg" id="feedbackError"></div>
+
+                <button type="button" class="auth-submit-btn" id="submitFeedbackBtn">
+                    HANTAR MAKLUM BALAS
+                </button>
+                <button type="button" class="skip-feedback-btn" id="skipFeedbackBtn">
+                    Skip sahaja →
+                </button>
+            </div>
+        </div>
+        <!-- =========================================
              AI CHAT OVERLAY
              ========================================= -->
         <div class="ai-chat-overlay" id="aiChatOverlay">
@@ -127,6 +173,36 @@
                 <button type="button" class="dropdown-item logout-item" id="globalLogoutBtn">
                     <span class="dropdown-icon">🚪</span>
                     <span>Log Keluar</span>
+                </button>
+            </div>
+        </div>
+        <!-- =========================================
+             ADMIN OVERRIDE MODAL (Skip Game)
+             ========================================= -->
+        <div class="admin-override-overlay" id="adminOverrideOverlay">
+            <div class="admin-override-container">
+                <div class="override-icon">🔐</div>
+                <h2 class="override-title">Akses Admin</h2>
+                <p class="override-subtitle">Sila masukkan password admin untuk teruskan tanpa main game</p>
+
+                <div class="form-group">
+                    <label for="overridePassword">Password Admin</label>
+                    <div class="password-wrapper">
+                        <input 
+                            type="password" 
+                            id="overridePassword" 
+                            placeholder="Masukkan password admin"
+                            autocomplete="off">
+                        <button type="button" class="eye-btn" onclick="togglePassword('overridePassword', this)">👁</button>
+                    </div>
+                    <span class="error-msg" id="overrideError"></span>
+                </div>
+
+                <button type="button" class="auth-submit-btn" id="overrideSubmitBtn">
+                    SAHKAN
+                </button>
+                <button type="button" class="skip-feedback-btn" id="overrideCancelBtn">
+                    Batal
                 </button>
             </div>
         </div>
@@ -285,7 +361,7 @@
         <!-- SCENE 2: LOGIN SCENE -->
         <section id="loginScene" class="scene">
             <div class="auth-card">
-                <button type="button" class="back-btn" onclick="showScene('landingScene')">← Back</button>
+                <button type="button" class="back-btn" onclick="goBack()">← Back</button>
                 
                 <h2 class="auth-title">Welcome Back</h2>
                 <p class="auth-subtitle">Log in to continue your journey</p>
@@ -318,7 +394,7 @@
         <!-- SCENE 3: SIGN UP SCENE -->
         <section id="signupScene" class="scene">
             <div class="auth-card">
-                <button type="button" class="back-btn" onclick="showScene('loginScene')">← Back to Login</button>
+                <button type="button" class="back-btn" onclick="goBack()">← Back to Login</button>
                 
                 <h2 class="auth-title">Create Your Account</h2>
                 <p class="auth-subtitle">Start your career journey with MoTYF+</p>
@@ -330,7 +406,24 @@
                         <span class="error-msg" id="signupUsernameError"></span>
                     </div>
 
+                    <!-- User Type Selection -->
                     <div class="form-group">
+                        <label>Daftar Sebagai</label>
+                        <div class="user-type-options">
+                            <button type="button" class="user-type-btn active" data-type="pelajar" id="typePelajarBtn">
+                                <span class="type-icon">🎓</span>
+                                <span class="type-label">Murid SaKTi</span>
+                            </button>
+                            <button type="button" class="user-type-btn" data-type="luar" id="typeLuarBtn">
+                                <span class="type-icon">👤</span>
+                                <span class="type-label">Pengguna Luar</span>
+                            </button>
+                        </div>
+                        <input type="hidden" id="signupUserType" value="pelajar">
+                    </div>
+
+                    <!-- Kelas Field (untuk Pelajar sahaja) -->
+                    <div class="form-group" id="kelasFieldGroup">
                         <label for="signupKelas">Kelas</label>
                         <input type="text" id="signupKelas" placeholder="Contoh: 5 Sains 1" autocomplete="off">
                         <span class="error-msg" id="signupKelasError"></span>
@@ -364,7 +457,7 @@
         <!-- SCENE 4: CAREER QUESTION -->
         <section id="careerQuestionScene" class="scene">
             <div class="auth-card career-card">
-                <button type="button" class="back-btn" onclick="showScene('landingScene')">← Back</button>
+                <button type="button" class="back-btn" onclick="goBack()">← Back</button>
                 
                 <div class="user-greeting" id="userGreeting"></div>
                 
@@ -390,7 +483,7 @@
         <!-- SCENE 5: REASON QUESTION -->
         <section id="reasonQuestionScene" class="scene">
             <div class="auth-card reason-card">
-                <button type="button" class="back-btn" onclick="showScene('careerQuestionScene')">← Back</button>
+                <button type="button" class="back-btn" onclick="goBack()">← Back</button>
                 
                 <h2 class="auth-title">Mengapa Belum Ada Hala Tuju?</h2>
                 <p class="auth-subtitle">Pilih sebab yang menggambarkan anda (boleh pilih lebih daripada satu)</p>
@@ -431,7 +524,7 @@
         <!-- SCENE 6: CAREER EXPLORATION -->
         <section id="careerExplorationScene" class="scene">
             <div class="exploration-container">
-                <button type="button" class="back-btn" onclick="showScene('landingScene')">← Back</button>
+                <button type="button" class="back-btn" onclick="goBack()">← Back</button>
                 
                 <h2 class="auth-title">Peta Perjalanan Anda</h2>
                 <p class="auth-subtitle" id="explorationMessage">Jom terokai kluster kerjaya yang mungkin sesuai dengan anda</p>
@@ -480,20 +573,24 @@
             </div>
         </section>
 
-        <!-- SCENE 7: GAME SCENE -->
-         <section id="gameScene" class="scene">
+        <!-- =========================================
+             SCENE 7: GAME SCENE
+             ========================================= -->
+        <section id="gameScene" class="scene">
             <div class="game-container">
                 <div class="game-top-buttons">
-                    <button type="button" class="edit-back-btn" onclick="showScene('landingScene')">
+                    <button type="button" class="edit-back-btn" id="gameBackBtn">
                         ← Back
                     </button>
                     <button type="button" class="tutorial-help-btn" id="gameTutorialBtn">
                         📖 Cara Guna
                     </button>
+                    <button type="button" class="tutorial-help-btn" id="gameFullscreenBtn">
+                        ⛶ Fullscreen
+                    </button>
                 </div>
-                
-                <!-- ... rest of game scene ... -->
 
+                <!-- Bahagian 1: Cinematic Journey Begin -->
                 <div id="journeyBegin" class="journey-begin">
                     <div class="journey-icon">✦</div>
                     <h2 class="journey-title">Perjalanan Bermula!</h2>
@@ -506,32 +603,39 @@
                     <p class="journey-subtext">Bersedia untuk pengembaraan seterusnya...</p>
                 </div>
 
-                <div id="gdevelopGame" class="gdevelop-game" style="display: none;"></div>
+                <!-- Bahagian 2: Game GDevelop -->
+                <div id="gdevelopGame" class="gdevelop-game" style="display: none;">
                     <h2 class="game-title">Jom Main!</h2>
                     <p class="game-desc">Selesaikan Inventori Minat Kerjaya (IMK) untuk teruskan perjalanan anda.</p>
-                    
-                    <!-- LOADING INDICATOR -->
+
+                    <!-- Loading Indicator -->
                     <div class="game-loading" id="gameLoading">
                         <div class="loading-spinner"></div>
                         <p class="loading-text">Memuatkan game... <strong id="loadPercent">0%</strong></p>
                         <p class="loading-hint">Sila tunggu sebentar ⏳</p>
                     </div>
-                    
-                <div class="iframe-wrapper">
-                    <iframe 
-                        id="gameIframe"
-                        data-src="assets/game/index.html"
-                        frameborder="0"
-                        allow="fullscreen; autoplay"
-                        allowfullscreen
-                        loading="lazy"
-                        title="MoTYF+ IMK Game">
-                    </iframe>
-                </div>
+
+                    <!-- Iframe Wrapper -->
+                    <div class="iframe-wrapper" id="gameFullscreenWrapper">
+                        <iframe 
+                            id="gameIframe"
+                            data-src="assets/game/index.html"
+                            frameborder="0"
+                            allow="fullscreen; autoplay"
+                            allowfullscreen
+                            loading="lazy"
+                            title="MoTYF+ IMK Game">
+                        </iframe>
+                        <button type="button" class="fullscreen-exit-btn" id="fullscreenExitBtn">
+                            ✕ Keluar
+                        </button>
+                    </div>
+
+                    <!-- Button TERUSKAN -->
                     <button type="button" class="auth-submit-btn" id="continueToCodeBtn" style="margin-top: 1.5rem;">
                         TERUSKAN →
                     </button>
-
+                </div>
             </div>
         </section>
         <!-- =========================================
@@ -539,7 +643,7 @@
              ========================================= -->
         <section id="dashboardScene" class="scene">
             <div class="dashboard-container">
-                <button type="button" class="back-btn" onclick="showScene('landingScene')">← Back</button>
+                <button type="button" class="back-btn" onclick="goBack()">← Back</button>
                 
                 <!-- Header -->
                 <div class="dashboard-header">
@@ -604,7 +708,7 @@
              ========================================= -->
         <section id="profileScene" class="scene">
             <div class="profile-container">
-                <button type="button" class="back-btn" onclick="showScene('landingScene')">← Back</button>
+                <button type="button" class="back-btn" onclick="goBack()">← Back</button>
                 
                 <!-- Profile Header -->
                 <div class="profile-header">
@@ -667,7 +771,7 @@
              ========================================= -->
         <section id="editProfileScene" class="scene">
             <div class="edit-profile-container">
-                <button type="button" class="edit-back-btn" onclick="showScene('profileScene')">← Back to Profile</button>
+                <button type="button" class="edit-back-btn" onclick="goBack()">← Back to Profile</button>
                 
                 <h2 class="auth-title">Edit Profil</h2>
                 <p class="auth-subtitle">Kemaskini maklumat peribadi anda</p>
@@ -885,7 +989,7 @@
              ========================================= -->
         <section id="aboutScene" class="scene">
             <div class="about-container">
-                <button type="button" class="edit-back-btn" onclick="showScene('landingScene')">← Back to Home</button>
+                <button type="button" class="edit-back-btn" onclick="goBack()">← Back to Home</button>
 
                 <div class="about-header">
                     <div class="about-icon">🚀</div>

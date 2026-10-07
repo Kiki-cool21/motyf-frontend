@@ -22,15 +22,43 @@ document.addEventListener('DOMContentLoaded', () => {
     let tutorialCallback = null;
 
     // ============================================================
-    // 1. SCENE MANAGEMENT
+    // 1. SCENE MANAGEMENT — Dengan History Tracking
     // ============================================================
     const scenes = document.querySelectorAll('.scene');
+    
+    // History stack untuk Back button
+    const sceneHistory = [];
+    let currentScene = null;
 
-    window.showScene = function(sceneId) {
+    window.showScene = function(sceneId, options = {}) {
+        // Simpan scene lama ke history (kalau ada)
+        if (currentScene && currentScene !== sceneId && !options.skipHistory) {
+            sceneHistory.push(currentScene);
+            console.log(`📚 History: [${sceneHistory.join(' → ')}] → ${sceneId}`);
+        }
+
+        // Update current scene
+        currentScene = sceneId;
+
+        // Sembunyi semua scene, tunjuk yang baru
         scenes.forEach(scene => scene.classList.remove('active'));
         const target = document.getElementById(sceneId);
         if (target) target.classList.add('active');
         resetErrors();
+    };
+
+    // ============================================================
+    // GO BACK — Ke Scene Sebelumnya
+    // ============================================================
+    window.goBack = function(defaultScene = 'landingScene') {
+        if (sceneHistory.length > 0) {
+            const previousScene = sceneHistory.pop();
+            console.log(`🔙 Back ke: ${previousScene}`);
+            window.showScene(previousScene, { skipHistory: true });
+        } else {
+            console.log(`🔙 Takda history — pergi ke: ${defaultScene}`);
+            window.showScene(defaultScene, { skipHistory: true });
+        }
     };
 
     // ============================================================
@@ -200,48 +228,120 @@ document.addEventListener('DOMContentLoaded', () => {
     // SIGN UP
     const signupForm = document.getElementById('signupForm');
     if (signupForm) {
-        signupForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            resetErrors();
+    // ============================================================
+    // SIGN UP — User Type Toggle (Pelajar vs Luar)
+    // ============================================================
+    const typePelajarBtn = document.getElementById('typePelajarBtn');
+    const typeLuarBtn = document.getElementById('typeLuarBtn');
+    const signupUserTypeInput = document.getElementById('signupUserType');
+    const kelasFieldGroup = document.getElementById('kelasFieldGroup');
 
-            const username = document.getElementById('signupUsername').value.trim();
-            const kelas = document.getElementById('signupKelas').value.trim();
-            const password = document.getElementById('signupPassword').value;
-            const confirmPassword = document.getElementById('signupConfirmPassword').value;
-
-            let isValid = true;
-            if (!username) { showError('signupUsernameError', 'Username diperlukan.'); isValid = false; }
-            if (!kelas) { showError('signupKelasError', 'Kelas diperlukan.'); isValid = false; }
-            if (!password) { showError('signupPasswordError', 'Password diperlukan.'); isValid = false; }
-            if (!confirmPassword) { showError('signupConfirmError', 'Sila confirm password.'); isValid = false; }
-            if (password && confirmPassword && password !== confirmPassword) {
-                showError('signupConfirmError', 'Password tidak sepadan.');
-                isValid = false;
-            }
-            if (!isValid) return;
-
-            try {
-                const res = await fetch('https://motyf-backend.onrender.com/api/signup', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, kelas, password })
-                });
-                const data = await res.json();
-                if (!res.ok) { showError('signupGlobalError', data.message); return; }
-
-                signupForm.reset();
-                
-                // Set flag — trigger guide tutorial selepas login
-                localStorage.setItem('motyf_show_guide', 'true');
-                
-                showScene('loginScene');
-                document.getElementById('loginUsername').value = username;
-                document.getElementById('loginPassword').focus();
-            } catch (err) {
-                console.error(err);
-                showError('signupGlobalError', 'Ralat sambungan. Pastikan backend berjalan.');
-            }
+    if (typePelajarBtn && typeLuarBtn) {
+        // Klik "Pelajar"
+        typePelajarBtn.addEventListener('click', () => {
+            typePelajarBtn.classList.add('active');
+            typeLuarBtn.classList.remove('active');
+            if (signupUserTypeInput) signupUserTypeInput.value = 'pelajar';
+            if (kelasFieldGroup) kelasFieldGroup.classList.remove('hidden');
         });
+
+        // Klik "Pengguna Luar"
+        typeLuarBtn.addEventListener('click', () => {
+            typeLuarBtn.classList.add('active');
+            typePelajarBtn.classList.remove('active');
+            if (signupUserTypeInput) signupUserTypeInput.value = 'luar';
+            if (kelasFieldGroup) kelasFieldGroup.classList.add('hidden');
+            
+            // Reset kelas field error
+            const errEl = document.getElementById('signupKelasError');
+            if (errEl) errEl.textContent = '';
+        });
+    }
+    signupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        resetErrors();
+
+        const username = document.getElementById('signupUsername').value.trim();
+        const userType = document.getElementById('signupUserType').value || 'pelajar';
+        const kelas = userType === 'pelajar' 
+            ? document.getElementById('signupKelas').value.trim() 
+            : 'Pengguna Luar';
+        const password = document.getElementById('signupPassword').value;
+        const confirmPassword = document.getElementById('signupConfirmPassword').value;
+
+        let isValid = true;
+        
+        if (!username) { 
+            showError('signupUsernameError', 'Username diperlukan.'); 
+            isValid = false; 
+        }
+        
+        if (userType === 'pelajar' && !kelas) { 
+            showError('signupKelasError', 'Kelas diperlukan.'); 
+            isValid = false; 
+        }
+        
+        if (!password) { 
+            showError('signupPasswordError', 'Password diperlukan.'); 
+            isValid = false; 
+        }
+        
+        if (!confirmPassword) { 
+            showError('signupConfirmError', 'Sila confirm password.'); 
+            isValid = false; 
+        }
+        
+        if (password && confirmPassword && password !== confirmPassword) {
+            showError('signupConfirmError', 'Password tidak sepadan.');
+            isValid = false;
+        }
+        
+        if (!isValid) return;
+
+        try {
+            const res = await fetch('https://motyf-backend.onrender.com/api/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    username, 
+                    kelas, 
+                    password,
+                    userType
+                })
+            });
+            
+            const data = await res.json();
+            
+            if (!res.ok) { 
+                showError('signupGlobalError', data.message); 
+                return; 
+            }
+
+            signupForm.reset();
+            
+            // Reset user type ke default
+            const typePelajarBtn = document.getElementById('typePelajarBtn');
+            const typeLuarBtn = document.getElementById('typeLuarBtn');
+            const signupUserTypeInput = document.getElementById('signupUserType');
+            const kelasFieldGroup = document.getElementById('kelasFieldGroup');
+            
+            if (typePelajarBtn) typePelajarBtn.classList.add('active');
+            if (typeLuarBtn) typeLuarBtn.classList.remove('active');
+            if (signupUserTypeInput) signupUserTypeInput.value = 'pelajar';
+            if (kelasFieldGroup) kelasFieldGroup.classList.remove('hidden');
+            
+            // Set flag — trigger guide tutorial selepas login
+            localStorage.setItem('motyf_show_guide', 'true');
+            
+            showScene('loginScene');
+            document.getElementById('loginUsername').value = username;
+            document.getElementById('loginPassword').focus();
+            
+        } catch (err) {
+            console.error(err);
+            showError('signupGlobalError', 'Ralat sambungan. Pastikan backend berjalan.');
+        }
+    });
     }
 
     // LOGIN
@@ -500,90 +600,125 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================================
     // 9. GAME SCENE
     // ============================================================
-function proceedToGameScene() {
-    const iframe = document.getElementById('gameIframe');
-    const loadingEl = document.getElementById('gameLoading');
-    const gameEl = document.getElementById('gdevelopGame');
-    const percentEl = document.getElementById('loadPercent');
-    const iframeWrapper = document.querySelector('.iframe-wrapper');
-    const journeyEl = document.getElementById('journeyBegin');
-    
-    console.log("🎮 proceedToGameScene dipanggil");
-
-    // ============================================================
-    // STEP 1: Tunjuk Cinematic, sembunyi Game (paksa dengan !important)
-    // ============================================================
-    if (journeyEl) {
-        journeyEl.style.setProperty('display', 'flex', 'important');
-    }
-    if (gameEl) {
-        gameEl.style.setProperty('display', 'none', 'important');
-    }
-    
-    // Setup loading state
-    if (loadingEl) loadingEl.style.display = 'flex';
-    if (iframeWrapper) iframeWrapper.classList.add('loading');
-    if (percentEl) percentEl.textContent = '0%';
-
-    const user = getCurrentUser();
-    const textEl = document.getElementById('journeyText');
-    if (textEl && user) {
-        textEl.textContent = `Perjalanan anda untuk meneroka kerjaya impian bermula sekarang. Teruskan melangkah, jangan pernah berhenti!`;
-    }
-
-    showScene('gameScene');
-
-    // ============================================================
-    // STEP 2: Selepas 3 saat → tukar Cinematic ke Game
-    // ============================================================
-    setTimeout(() => {
-        console.log("⏰ 3 saat tamat — tukar ke game");
+    function proceedToGameScene() {
+        const iframe = document.getElementById('gameIframe');
+        const loadingEl = document.getElementById('gameLoading');
+        const gameEl = document.getElementById('gdevelopGame');
+        const percentEl = document.getElementById('loadPercent');
+        const iframeWrapper = document.querySelector('.iframe-wrapper');
+        const journeyEl = document.getElementById('journeyBegin');
         
-        // Sembunyikan cinematic (paksa dengan !important)
+        console.log("🎮 proceedToGameScene dipanggil");
+
+        // ============================================================
+        // STEP 1: Tunjuk Cinematic, sembunyi Game
+        // ============================================================
         if (journeyEl) {
-            journeyEl.style.setProperty('display', 'none', 'important');
+            journeyEl.style.setProperty('display', 'flex', 'important');
         }
-        
-        // Tunjuk game (paksa dengan !important)
         if (gameEl) {
-            gameEl.style.setProperty('display', 'flex', 'important');
+            gameEl.style.setProperty('display', 'none', 'important');
         }
-        
-        // Load game
-        if (iframe && (!iframe.src || iframe.src.includes('about:blank'))) {
-            const gameSrc = iframe.dataset.src;
-            if (gameSrc) {
-                console.log("🎮 Loading game...");
+
+        const user = getCurrentUser();
+        const textEl = document.getElementById('journeyText');
+        if (textEl && user) {
+            textEl.textContent = `Perjalanan anda untuk meneroka kerjaya impian bermula sekarang. Teruskan melangkah, jangan pernah berhenti!`;
+        }
+
+        showScene('gameScene');
+
+        // ============================================================
+        // STEP 2: Selepas 3 saat → tukar Cinematic ke Game
+        // ============================================================
+        setTimeout(() => {
+            console.log("⏰ 3 saat tamat — tukar ke game");
+            
+            // Sembunyikan cinematic
+            if (journeyEl) {
+                journeyEl.style.setProperty('display', 'none', 'important');
+            }
+            
+            // Tunjuk game
+            if (gameEl) {
+                gameEl.style.setProperty('display', 'flex', 'important');
+            }
+
+            // ============================================================
+            // STEP 3: Force Show Loading (minimum 1.5 saat)
+            // ============================================================
+            if (loadingEl) {
+                loadingEl.style.setProperty('display', 'flex', 'important');
+                loadingEl.style.setProperty('visibility', 'visible', 'important');
+            }
+            if (percentEl) {
+                percentEl.textContent = '0%';
+            }
+
+            // ============================================================
+            // STEP 4: Load iframe
+            // ============================================================
+            if (iframe) {
+                const gameSrc = iframe.dataset.src;
+                const needsReload = !iframe.src || 
+                                    iframe.src.includes('about:blank') || 
+                                    !iframe.src.includes('game/index.html');
                 
-                let progress = 0;
-                const progressInterval = setInterval(() => {
-                    if (progress < 90) {
-                        progress += Math.random() * 8;
-                        if (progress > 90) progress = 90;
-                        if (percentEl) percentEl.textContent = Math.floor(progress) + '%';
+                if (needsReload && gameSrc) {
+                    console.log("🎮 Loading game...");
+                    
+                    // Progress simulation
+                    let progress = 0;
+                    const progressInterval = setInterval(() => {
+                        if (progress < 90) {
+                            progress += Math.random() * 8;
+                            if (progress > 90) progress = 90;
+                            if (percentEl) {
+                                percentEl.textContent = Math.floor(progress) + '%';
+                            }
+                        }
+                    }, 300);
+                    
+                    // Bila iframe siap load
+                    iframe.onload = () => {
+                        console.log("✅ Game loaded!");
+                        clearInterval(progressInterval);
+                        
+                        if (percentEl) {
+                            percentEl.textContent = '100%';
+                        }
+                        
+                        // Tunjuk loading minimum 1.5 saat
+                        setTimeout(() => {
+                            if (loadingEl) {
+                                loadingEl.style.setProperty('display', 'none', 'important');
+                                loadingEl.style.setProperty('visibility', 'hidden', 'important');
+                            }
+                            if (iframeWrapper) {
+                                iframeWrapper.classList.remove('loading');
+                            }
+                        }, 1500);
+                    };
+                    
+                    iframe.src = gameSrc;
+                } else {
+                    // Game dah load — tunjuk loading sekurang-kurangnya 1.5 saat
+                    console.log("✅ Game dah load sebelum ni");
+                    
+                    if (percentEl) {
+                        percentEl.textContent = '100%';
                     }
-                }, 300);
-                
-                iframe.onload = () => {
-                    console.log("✅ Game loaded!");
-                    clearInterval(progressInterval);
-                    if (percentEl) percentEl.textContent = '100%';
                     
                     setTimeout(() => {
-                        if (loadingEl) loadingEl.style.display = 'none';
-                        if (iframeWrapper) iframeWrapper.classList.remove('loading');
-                    }, 500);
-                };
-                
-                iframe.src = gameSrc;
+                        if (loadingEl) {
+                            loadingEl.style.setProperty('display', 'none', 'important');
+                            loadingEl.style.setProperty('visibility', 'hidden', 'important');
+                        }
+                    }, 1500);
+                }
             }
-        } else if (iframe && iframe.src) {
-            // Game dah load
-            if (loadingEl) loadingEl.style.display = 'none';
-            if (iframeWrapper) iframeWrapper.classList.remove('loading');
-        }
-    }, 3000);
-}
+        }, 3000);
+    }
     // Terima mesej dari GDevelop
     window.addEventListener('message', (event) => {
         const data = event.data;
@@ -699,8 +834,8 @@ function proceedToGameScene() {
     function getRiasecMeaning(code) {
         const meanings = {
             'R': 'Realistic', 'I': 'Investigative', 'A': 'Artistic',
-            'S': 'Social', 'E': 'Enterprising', 'C': 'Conventional',
-            'K': 'Kemahiran', 'M': 'Manajemen', 'P': 'Penyayang', 'B': 'Bekerjasama'
+            'S': 'Social', 'E': 'Enterprising', 'C': 'Conventional'
+
         };
         return code.split('').map(l => meanings[l] || l).join(' · ');
     }
@@ -1580,7 +1715,18 @@ function proceedToGameScene() {
     // ============================================================
     // 11. TERUSKAN BUTTON (Fallback handler)
     // ============================================================
+    // ============================================================
+    // TERUSKAN BUTTON — Kena habis game, atau password admin
+    // ============================================================
+    const ADMIN_OVERRIDE_PASSWORD = 'motyfadmin2026';
+
     const continueToCodeBtn = document.getElementById('continueToCodeBtn');
+    const adminOverrideOverlay = document.getElementById('adminOverrideOverlay');
+    const overridePassword = document.getElementById('overridePassword');
+    const overrideSubmitBtn = document.getElementById('overrideSubmitBtn');
+    const overrideCancelBtn = document.getElementById('overrideCancelBtn');
+    const overrideError = document.getElementById('overrideError');
+
     if (continueToCodeBtn) {
         continueToCodeBtn.addEventListener('click', () => {
             const user = getCurrentUser();
@@ -1589,31 +1735,72 @@ function proceedToGameScene() {
                 return;
             }
 
-            // Kalau dah ada kod IMK dari GDevelop, terus ke Code Scene
+            // ADA kod IMK (game dah habis) → terus pergi Code Scene
             if (user.imkCode) {
-                console.log("Using saved IMK code:", user.imkCode);
+                console.log("✅ Kod IMK dah ada — terus ke Code Scene");
                 proceedToCodeScene(user.imkCode);
                 return;
             }
 
-            // Kalau belum ada → prompt user untuk taip kod manual
-            const imkCode = prompt(
-                "Masukkan kod IMK / Kod Holland anda (3 huruf):\nContoh: KRS",
-                ""
+            // TIADA kod → minta password admin
+            console.log("⚠️ Game belum habis — minta password admin");
+            if (adminOverrideOverlay) {
+                adminOverrideOverlay.classList.add('open');
+                if (overrideError) overrideError.textContent = '';
+                if (overridePassword) {
+                    overridePassword.value = '';
+                    setTimeout(() => overridePassword.focus(), 300);
+                }
+            }
+        });
+    }
+
+    // ============================================================
+    // SUBMIT ADMIN PASSWORD
+    // ============================================================
+    if (overrideSubmitBtn) {
+        overrideSubmitBtn.addEventListener('click', () => {
+            const password = overridePassword ? overridePassword.value.trim() : '';
+
+            if (!password) {
+                if (overrideError) overrideError.textContent = 'Sila masukkan password.';
+                return;
+            }
+
+            if (password !== ADMIN_OVERRIDE_PASSWORD) {
+                if (overrideError) overrideError.textContent = 'Password salah. Cuba lagi.';
+                if (overridePassword) overridePassword.value = '';
+                return;
+            }
+
+            // Password betul → prompt manual code
+            if (overrideError) overrideError.textContent = '';
+
+            const manualCode = prompt(
+                "✅ Admin access granted!\n\nMasukkan kod IMK / Kod Holland (3 huruf):\nContoh: KRS"
             );
 
-            if (!imkCode) return;
+            if (!manualCode) {
+                // User cancel — tutup modal
+                if (adminOverrideOverlay) adminOverrideOverlay.classList.remove('open');
+                return;
+            }
 
-            const cleanCode = imkCode.toUpperCase().trim();
+            const cleanCode = manualCode.toUpperCase().trim();
 
             if (cleanCode.length !== 3 || !/^[A-Z]{3}$/.test(cleanCode)) {
                 alert("Kod mesti 3 huruf (contoh: KRS). Sila cuba lagi.");
                 return;
             }
 
+            // Simpan kod
+            const user = getCurrentUser();
+            if (!user) return;
+
             user.imkCode = cleanCode;
             setCurrentUser(user);
 
+            // Simpan ke MongoDB
             fetch('https://motyf-backend.onrender.com/api/imk-code', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1622,10 +1809,39 @@ function proceedToGameScene() {
                     imkCode: cleanCode 
                 })
             }).then(res => res.json())
-              .then(data => console.log("✅ IMK code saved:", data))
+              .then(data => console.log("✅ IMK code saved (admin override):", data))
               .catch(err => console.error("Error:", err));
 
+            console.log(`🔐 Admin override — kod: ${cleanCode}`);
+
+            // Tutup modal
+            if (adminOverrideOverlay) adminOverrideOverlay.classList.remove('open');
+
+            // Terus ke Code Scene
             proceedToCodeScene(cleanCode);
+        });
+    }
+
+    // ============================================================
+    // CANCEL ADMIN OVERRIDE
+    // ============================================================
+    if (overrideCancelBtn) {
+        overrideCancelBtn.addEventListener('click', () => {
+            if (adminOverrideOverlay) adminOverrideOverlay.classList.remove('open');
+            if (overridePassword) overridePassword.value = '';
+            if (overrideError) overrideError.textContent = '';
+        });
+    }
+
+    // ============================================================
+    // ENTER KEY — Submit
+    // ============================================================
+    if (overridePassword) {
+        overridePassword.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (overrideSubmitBtn) overrideSubmitBtn.click();
+            }
         });
     }
     // ============================================================
@@ -1864,19 +2080,29 @@ function proceedToGameScene() {
                 ? `<span class="badge badge-code">${s.imkCode}</span>`
                 : '-';
             
-            const date = s.createdAt 
-                ? new Date(s.createdAt).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: '2-digit' })
+            const date = s.createdAt
+                ? new Date(s.createdAt).toLocaleDateString('ms-MY') : '-';
+
+            // Rating stars
+            const ratingBadge = s.feedbackRating
+                ? `<span class="stars-display">${'★'.repeat(s.feedbackRating)}<span class="stars-empty">${'☆'.repeat(5 - s.feedbackRating)}</span></span>`
                 : '-';
 
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
+            // Comment (truncated)
+            const commentDisplay = s.feedbackComment
+                ? `<span class="comment-text" title="${s.feedbackComment.replace(/"/g, '&quot;')}">${s.feedbackComment.length > 40 ? s.feedbackComment.substring(0, 40) + '...' : s.feedbackComment}</span>`
+                : '-';
+
+            html += `<tr>
                 <td><strong>${s.username}</strong></td>
                 <td>${s.kelas || '-'}</td>
-                <td>${direction}</td>
-                <td>${s.exploredCluster || '-'}</td>
+                <td>${dirBadge}</td>
                 <td>${imkBadge}</td>
+                <td>${exploreBadge}</td>
+                <td>${ratingBadge}</td>
+                <td>${commentDisplay}</td>
                 <td>${date}</td>
-            `;
+            </tr>`;
             tbody.appendChild(tr);
         });
     }
@@ -2621,7 +2847,8 @@ function proceedToGameScene() {
         const errEl = document.getElementById('exploreQuestionError');
         if (errEl) errEl.textContent = '';
 
-        // Disable buttons sementara hantar
+        const exploreYesBtn = document.getElementById('exploreYesBtn');
+        const exploreNoBtn = document.getElementById('exploreNoBtn');
         if (exploreYesBtn) exploreYesBtn.disabled = true;
         if (exploreNoBtn) exploreNoBtn.disabled = true;
 
@@ -2641,18 +2868,41 @@ function proceedToGameScene() {
                 return;
             }
 
-            // Update localStorage
             user.foundCareerFromExplore = answer;
             setCurrentUser(user);
 
-            console.log(`✅ Jawapan "${answer}" disimpan ke MongoDB`);
+            console.log(`✅ Jawapan "${answer}" disimpan`);
 
-            // Balik ke landing page
-            showScene('landingScene');
+            // ============================================================
+            // SEMAK USER TYPE — Pengguna Luar vs Murid SaKTi
+            // ============================================================
+            // ============================================================
+            // SEMAK USER TYPE — Pengguna Luar vs Murid SaKTi
+            // ============================================================
+            // Check userType ATAU kelas (fallback untuk user lama)
+            const isPenggunaLuar = 
+                user.userType === 'luar' || 
+                user.kelas === 'Pengguna Luar';
+            
+            console.log("User check:", {
+                userType: user.userType,
+                kelas: user.kelas,
+                isPenggunaLuar: isPenggunaLuar
+            });
+            
+            if (isPenggunaLuar) {
+                // Pengguna Luar → tunjuk feedback
+                console.log("👤 Pengguna Luar — tunjuk feedback modal");
+                openFeedbackModal();
+            } else {
+                // Murid SaKTi → terus ke landing
+                console.log("🎓 Murid SaKTi — terus ke landing");
+                showScene('landingScene');
+            }
 
         } catch (err) {
             console.error(err);
-            if (errEl) errEl.textContent = 'Ralat sambungan. Pastikan backend berjalan.';
+            if (errEl) errEl.textContent = 'Ralat sambungan.';
         } finally {
             if (exploreYesBtn) exploreYesBtn.disabled = false;
             if (exploreNoBtn) exploreNoBtn.disabled = false;
@@ -3003,5 +3253,266 @@ function proceedToGameScene() {
         }
     }, 2000);
 
+    // ============================================================
+    // FULLSCREEN — Game Fit Device Screen
+    // ============================================================
+    const gameFullscreenBtn = document.getElementById('gameFullscreenBtn');
+    const fullscreenExitBtn = document.getElementById('fullscreenExitBtn');
+    const gameFullscreenWrapper = document.getElementById('gameFullscreenWrapper');
 
+
+    // Fungsi masuk fullscreen — guna IFRAME terus
+    function enterGameFullscreen() {
+        const iframe = document.getElementById('gameIframe');
+        if (!iframe) {
+            console.warn("⚠️ Game iframe tak dijumpai");
+            return;
+        }
+
+        // Semak support
+        const requestFS = 
+            iframe.requestFullscreen ||
+            iframe.webkitRequestFullscreen ||
+            iframe.mozRequestFullScreen ||
+            iframe.msRequestFullscreen;
+
+        if (!requestFS) {
+            alert("Browser anda tak support fullscreen. Cuba Chrome/Safari terbaru.");
+            return;
+        }
+
+        try {
+            const promise = requestFS.call(iframe);
+            
+            if (promise && promise.then) {
+                promise
+                    .then(() => {
+                        console.log("✅ Fullscreen aktif (iframe)");
+                        // FOCUS iframe supaya keyboard berfungsi
+                        setTimeout(() => {
+                            try {
+                                iframe.focus();
+                                iframe.contentWindow.focus();
+                                console.log("🎯 Iframe focused");
+                            } catch (err) {
+                                console.warn("Focus error:", err);
+                            }
+                        }, 300);
+                    })
+                    .catch((err) => {
+                        console.warn("⚠️ Fullscreen ditolak:", err.message);
+                        alert("Fullscreen tak dibenarkan. Cuba klik lagi.");
+                    });
+            }
+        } catch (err) {
+            console.warn("Fullscreen error:", err);
+        }
+    }
+
+    // Fungsi keluar fullscreen
+    function exitGameFullscreen() {
+        const exitFS = 
+            document.exitFullscreen ||
+            document.webkitExitFullscreen ||
+            document.mozCancelFullScreen ||
+            document.msExitFullscreen;
+
+        if (exitFS) {
+            exitFS.call(document)
+                .then(() => {
+                    console.log("🚪 Keluar fullscreen");
+                })
+                .catch((err) => {
+                    console.warn("Exit error:", err);
+                });
+        }
+    }
+
+    // Bind button Fullscreen
+    if (gameFullscreenBtn) {
+        gameFullscreenBtn.addEventListener('click', enterGameFullscreen);
+    }
+
+    // Bind button Keluar
+    if (fullscreenExitBtn) {
+        fullscreenExitBtn.addEventListener('click', exitGameFullscreen);
+    }
+
+    // Track fullscreen change + focus iframe
+    document.addEventListener('fullscreenchange', () => {
+        const iframe = document.getElementById('gameIframe');
+        
+        if (document.fullscreenElement) {
+            console.log("📺 Masuk fullscreen");
+            
+            // Focus iframe supaya keyboard berfungsi
+            if (iframe) {
+                setTimeout(() => {
+                    try {
+                        iframe.focus();
+                        if (iframe.contentWindow) {
+                            iframe.contentWindow.focus();
+                        }
+                        console.log("🎯 Iframe focused selepas fullscreen");
+                    } catch (err) {
+                        console.warn("Focus error:", err);
+                    }
+                }, 300);
+            }
+        } else {
+            console.log("📺 Keluar fullscreen");
+        }
+    });
+    // ============================================================
+    // FEEDBACK MODAL — Pengguna Luar
+    // ============================================================
+    const feedbackOverlay = document.getElementById('feedbackOverlay');
+    const starRating = document.getElementById('starRating');
+    const ratingText = document.getElementById('ratingText');
+    const submitFeedbackBtn = document.getElementById('submitFeedbackBtn');
+    const skipFeedbackBtn = document.getElementById('skipFeedbackBtn');
+    const feedbackComment = document.getElementById('feedbackComment');
+
+    let selectedRating = 0;
+
+    const RATING_LABELS = {
+        1: 'Sangat Tidak Berkesan 😞',
+        2: 'Kurang Berkesan 😕',
+        3: 'Sederhana 🙂',
+        4: 'Berkesan 😊',
+        5: 'Sangat Berkesan 🤩'
+    };
+
+    // Buka feedback modal
+    function openFeedbackModal() {
+        if (!feedbackOverlay) return;
+        
+        // Reset
+        selectedRating = 0;
+        if (ratingText) ratingText.textContent = 'Pilih rating';
+        if (feedbackComment) feedbackComment.value = '';
+        document.querySelectorAll('.star').forEach(s => s.classList.remove('active', 'hover'));
+        
+        feedbackOverlay.classList.add('open');
+    }
+
+    // Star rating interaksi
+    if (starRating) {
+        const stars = starRating.querySelectorAll('.star');
+
+        stars.forEach(star => {
+            // Hover
+            star.addEventListener('mouseenter', () => {
+                const value = parseInt(star.dataset.value);
+                stars.forEach(s => {
+                    s.classList.remove('hover');
+                    if (parseInt(s.dataset.value) <= value) {
+                        s.classList.add('hover');
+                    }
+                });
+                if (ratingText) {
+                    ratingText.textContent = RATING_LABELS[value] || '';
+                }
+            });
+
+            // Keluar hover
+            star.addEventListener('mouseleave', () => {
+                stars.forEach(s => s.classList.remove('hover'));
+                if (ratingText) {
+                    ratingText.textContent = selectedRating > 0 
+                        ? RATING_LABELS[selectedRating] 
+                        : 'Pilih rating';
+                }
+            });
+
+            // Klik
+            star.addEventListener('click', () => {
+                selectedRating = parseInt(star.dataset.value);
+                stars.forEach(s => {
+                    s.classList.remove('active');
+                    if (parseInt(s.dataset.value) <= selectedRating) {
+                        s.classList.add('active');
+                    }
+                });
+                if (ratingText) {
+                    ratingText.textContent = RATING_LABELS[selectedRating] || '';
+                }
+            });
+        });
+    }
+
+    // Submit feedback
+    if (submitFeedbackBtn) {
+        submitFeedbackBtn.addEventListener('click', async () => {
+            const errEl = document.getElementById('feedbackError');
+            if (errEl) errEl.textContent = '';
+
+            if (selectedRating === 0) {
+                if (errEl) errEl.textContent = 'Sila pilih rating bintang.';
+                return;
+            }
+
+            const user = getCurrentUser();
+            if (!user) return;
+
+            const comment = feedbackComment ? feedbackComment.value.trim() : '';
+
+            try {
+                const res = await fetch('https://motyf-backend.onrender.com/api/feedback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: user.username,
+                        rating: selectedRating,
+                        comment: comment
+                    })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    if (errEl) errEl.textContent = data.message;
+                    return;
+                }
+
+                console.log("✅ Feedback disimpan:", selectedRating, "bintang");
+                user.feedbackRating = selectedRating;
+                setCurrentUser(user);
+
+                if (feedbackOverlay) feedbackOverlay.classList.remove('open');
+                
+                // Balik ke landing
+                setTimeout(() => {
+                    showScene('landingScene');
+                }, 400);
+
+            } catch (err) {
+                console.error(err);
+                if (errEl) errEl.textContent = 'Ralat sambungan.';
+            }
+        });
+    }
+
+    // Skip feedback
+    if (skipFeedbackBtn) {
+        skipFeedbackBtn.addEventListener('click', () => {
+            console.log("⏭️ Skip feedback");
+            if (feedbackOverlay) feedbackOverlay.classList.remove('open');
+            showScene('landingScene');
+        });
+    }
+    // ============================================================
+    // GAME SCENE — Back Button (ke Tutorial)
+    // ============================================================
+    const gameBackBtn = document.getElementById('gameBackBtn');
+    if (gameBackBtn) {
+        gameBackBtn.addEventListener('click', () => {
+            console.log("← Back — buka tutorial semula");
+            
+            // Buka tutorial modal (user berada di Game Scene, tak ke mana)
+            // Callback kosong — bila tutup tutorial, user kekal di Game Scene
+            showGameTutorial(() => {
+                console.log("✅ Tutorial ditutup — kekal di Game Scene");
+            });
+        });
+    }
 });
