@@ -177,6 +177,30 @@
             </div>
         </div>
         <!-- =========================================
+             LOADING SCENE (Selepas Game Habis)
+             ========================================= -->
+        <div class="loading-scene-overlay" id="loadingSceneOverlay">
+            <div class="loading-scene-container">
+                <div class="loading-scene-icon">✨</div>
+                <h2 class="loading-scene-title">Menganalisis Keputusan</h2>
+                <p class="loading-scene-subtitle">Sila tunggu sebentar...</p>
+
+                <div class="loading-scene-animation">
+                    <div class="loading-orbit">
+                        <div class="loading-orbit-dot"></div>
+                        <div class="loading-orbit-dot"></div>
+                        <div class="loading-orbit-dot"></div>
+                    </div>
+                    <div class="loading-center-icon">🎯</div>
+                </div>
+
+                <div class="loading-progress-bar">
+                    <div class="loading-progress-fill" id="loadingProgressFill"></div>
+                </div>
+                <p class="loading-progress-text" id="loadingProgressText">Menyediakan cadangan kerjaya...</p>
+            </div>
+        </div>
+        <!-- =========================================
              ADMIN OVERRIDE MODAL (Skip Game)
              ========================================= -->
         <div class="admin-override-overlay" id="adminOverrideOverlay">
@@ -361,7 +385,7 @@
         <!-- SCENE 2: LOGIN SCENE -->
         <section id="loginScene" class="scene">
             <div class="auth-card">
-                <button type="button" class="back-btn" onclick="goBack()">← Back</button>
+                <button type="button" class="back-btn" onclick="showScene('landingScene')">← Back</button>
                 
                 <h2 class="auth-title">Welcome Back</h2>
                 <p class="auth-subtitle">Log in to continue your journey</p>
@@ -394,7 +418,7 @@
         <!-- SCENE 3: SIGN UP SCENE -->
         <section id="signupScene" class="scene">
             <div class="auth-card">
-                <button type="button" class="back-btn" onclick="goBack()">← Back to Login</button>
+                <button type="button" class="back-btn" onclick="showScene('landingScene')">← Back to Login</button>
                 
                 <h2 class="auth-title">Create Your Account</h2>
                 <p class="auth-subtitle">Start your career journey with MoTYF+</p>
@@ -457,7 +481,7 @@
         <!-- SCENE 4: CAREER QUESTION -->
         <section id="careerQuestionScene" class="scene">
             <div class="auth-card career-card">
-                <button type="button" class="back-btn" onclick="goBack()">← Back</button>
+                <button type="button" class="back-btn" onclick="showScene('landingScene')">← Back</button>
                 
                 <div class="user-greeting" id="userGreeting"></div>
                 
@@ -483,7 +507,7 @@
         <!-- SCENE 5: REASON QUESTION -->
         <section id="reasonQuestionScene" class="scene">
             <div class="auth-card reason-card">
-                <button type="button" class="back-btn" onclick="goBack()">← Back</button>
+                <button type="button" class="back-btn" onclick="showScene('landingScene')">← Back</button>
                 
                 <h2 class="auth-title">Mengapa Belum Ada Hala Tuju?</h2>
                 <p class="auth-subtitle">Pilih sebab yang menggambarkan anda (boleh pilih lebih daripada satu)</p>
@@ -524,7 +548,7 @@
         <!-- SCENE 6: CAREER EXPLORATION -->
         <section id="careerExplorationScene" class="scene">
             <div class="exploration-container">
-                <button type="button" class="back-btn" onclick="goBack()">← Back</button>
+                <button type="button" class="back-btn" onclick="showScene('landingScene')">← Back</button>
                 
                 <h2 class="auth-title">Peta Perjalanan Anda</h2>
                 <p class="auth-subtitle" id="explorationMessage">Jom terokai kluster kerjaya yang mungkin sesuai dengan anda</p>
@@ -643,7 +667,7 @@
              ========================================= -->
         <section id="dashboardScene" class="scene">
             <div class="dashboard-container">
-                <button type="button" class="back-btn" onclick="goBack()">← Back</button>
+                <button type="button" class="back-btn" onclick="showScene('landingScene')">← Back</button>
                 
                 <!-- Header -->
                 <div class="dashboard-header">
@@ -708,7 +732,7 @@
              ========================================= -->
         <section id="profileScene" class="scene">
             <div class="profile-container">
-                <button type="button" class="back-btn" onclick="goBack()">← Back</button>
+                <button type="button" class="back-btn" onclick="showScene('landingScene')">← Back</button>
                 
                 <!-- Profile Header -->
                 <div class="profile-header">
@@ -771,7 +795,7 @@
              ========================================= -->
         <section id="editProfileScene" class="scene">
             <div class="edit-profile-container">
-                <button type="button" class="edit-back-btn" onclick="goBack()">← Back to Profile</button>
+                <button type="button" class="edit-back-btn" onclick="showScene('landingScene')">← Back to Profile</button>
                 
                 <h2 class="auth-title">Edit Profil</h2>
                 <p class="auth-subtitle">Kemaskini maklumat peribadi anda</p>
@@ -993,7 +1017,7 @@
              ========================================= -->
         <section id="aboutScene" class="scene">
             <div class="about-container">
-                <button type="button" class="edit-back-btn" onclick="goBack()">← Back to Home</button>
+                <button type="button" class="edit-back-btn" onclick="showScene('landingScene')">← Back to Home</button>
 
                 <div class="about-header">
                     <div class="about-icon">🚀</div>

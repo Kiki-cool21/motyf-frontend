@@ -9,13 +9,28 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================================
     // TUTORIAL MODAL — Variables
     // ============================================================
+    // ============================================================
+    // TUTORIAL SLIDES — Auto-detect Mobile/Desktop
+    // ============================================================
+    
+    // Detect mobile device
+    function isMobileForTutorial() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+            || window.innerWidth <= 768;
+    }
+
+    // Pilih folder tutorial ikut device
+    const TUTORIAL_FOLDER = isMobileForTutorial() ? 'tutorial-mobile' : 'tutorial';
+    
+    console.log(`📖 Tutorial folder: ${TUTORIAL_FOLDER} (${isMobileForTutorial() ? 'Mobile' : 'Desktop'})`);
+
     const TUTORIAL_SLIDES = [
-        'assets/tutorial/tutorial-1.png',
-        'assets/tutorial/tutorial-2.png',
-        'assets/tutorial/tutorial-3.png',
-        'assets/tutorial/tutorial-4.png',
-        'assets/tutorial/tutorial-5.png',
-        'assets/tutorial/tutorial-6.png'
+        `assets/${TUTORIAL_FOLDER}/tutorial-1.png`,
+        `assets/${TUTORIAL_FOLDER}/tutorial-2.png`,
+        `assets/${TUTORIAL_FOLDER}/tutorial-3.png`,
+        `assets/${TUTORIAL_FOLDER}/tutorial-4.png`,
+        `assets/${TUTORIAL_FOLDER}/tutorial-5.png`,
+        `assets/${TUTORIAL_FOLDER}/tutorial-6.png`
     ];
 
     let tutorialIndex = 0;
@@ -48,17 +63,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ============================================================
-    // GO BACK — Ke Scene Sebelumnya
+    // GO BACK — Sentiasa ke Landing Page
     // ============================================================
-    window.goBack = function(defaultScene = 'landingScene') {
-        if (sceneHistory.length > 0) {
-            const previousScene = sceneHistory.pop();
-            console.log(`🔙 Back ke: ${previousScene}`);
-            window.showScene(previousScene, { skipHistory: true });
-        } else {
-            console.log(`🔙 Takda history — pergi ke: ${defaultScene}`);
-            window.showScene(defaultScene, { skipHistory: true });
-        }
+    window.goBack = function() {
+        console.log("🔙 Back — pergi ke Landing Page");
+        window.showScene('landingScene', { skipHistory: true });
     };
 
     // ============================================================
@@ -719,39 +728,131 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, 3000);
     }
-    // Terima mesej dari GDevelop
+    // ============================================================
+    // TERIMA MESEJ DARI GAME (postMessage)
+    // ============================================================
     window.addEventListener('message', (event) => {
         const data = event.data;
+        
         if (data && data.type === 'IMK_COMPLETED' && data.imkCode) {
             console.log("📩 Kod diterima dari game:", data.imkCode);
             
             const imkCode = data.imkCode.toUpperCase();
-            const detail = data.detail || null;              // <-- BARU
+            const detail = data.detail || null;
             const user = getCurrentUser();
+            
             if (!user) return;
 
+            // Simpan kod dalam localStorage
             user.imkCode = imkCode;
-            if (detail) user.imkDetail = detail;             // <-- BARU
+            if (detail) user.imkDetail = detail;
             setCurrentUser(user);
 
-            // Simpan ke MongoDB
+            // ============================================================
+            // TUNJUK LOADING SCENE
+            // ============================================================
+            showGameLoadingScene();
+
+            // Simpan ke MongoDB (background)
             fetch('https://motyf-backend.onrender.com/api/imk-code', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     username: user.username, 
                     imkCode: imkCode,
-                    detail: detail                               // <-- BARU
+                    detail: detail
                 })
-            }).then(res => res.json())
-              .then(data => console.log("✅ Saved to DB:", data))
-              .catch(err => console.error("DB error:", err));
+            })
+            .then(res => res.json())
+            .then(data => console.log("✅ Saved to DB:", data))
+            .catch(err => console.error("DB error:", err));
 
+            // ============================================================
+            // SELEPAS 3 SAAT LOADING → CODE SCENE
+            // ============================================================
             setTimeout(() => {
-                proceedToCodeScene(imkCode);
-            }, 2000);
+                hideGameLoadingScene();
+                
+                setTimeout(() => {
+                    proceedToCodeScene(imkCode);
+                }, 400);
+            }, 3000);
         }
     });
+
+    // ============================================================
+    // LOADING SCENE — Show/Hide + Progress Animation
+    // ============================================================
+    function showGameLoadingScene() {
+        // ============================================================
+        // KELUAR FULLSCREEN DULU (supaya loading scene nampak)
+        // ============================================================
+        const gameScene = document.getElementById('gameScene');
+        const isTheater = gameScene && gameScene.classList.contains('theater-mode');
+        const isFS = document.fullscreenElement || document.webkitFullscreenElement;
+
+        if (isTheater) {
+            gameScene.classList.remove('theater-mode');
+            document.body.style.overflow = '';
+            console.log("🚪 Theater mode ditutup (untuk loading)");
+        }
+
+        if (isFS) {
+            const exitFS = 
+                document.exitFullscreen ||
+                document.webkitExitFullscreen ||
+                document.mozCancelFullScreen ||
+                document.msExitFullscreen;
+            
+            if (exitFS) {
+                exitFS.call(document)
+                    .then(() => console.log("🚪 Fullscreen ditutup (untuk loading)"))
+                    .catch((err) => console.warn(err));
+            }
+        }
+
+        // ============================================================
+        // SELEPAS KELUAR FULLSCREEN, TUNJUK LOADING
+        // ============================================================
+        setTimeout(() => {
+            const overlay = document.getElementById('loadingSceneOverlay');
+            const progressFill = document.getElementById('loadingProgressFill');
+            const progressText = document.getElementById('loadingProgressText');
+            
+            if (!overlay) return;
+
+            // Reset progress
+            if (progressFill) progressFill.style.width = '0%';
+            if (progressText) progressText.textContent = 'Menyediakan cadangan kerjaya...';
+
+            overlay.classList.add('open');
+
+            // Animate progress
+            const steps = [
+                { percent: 25, text: 'Menyimpan kod IMK...' },
+                { percent: 50, text: 'Menganalisis minat anda...' },
+                { percent: 75, text: 'Mencari kerjaya yang sesuai...' },
+                { percent: 100, text: 'Menyediakan cadangan...' }
+            ];
+
+            steps.forEach((step, i) => {
+                setTimeout(() => {
+                    if (progressFill) progressFill.style.width = step.percent + '%';
+                    if (progressText) progressText.textContent = step.text;
+                }, (i + 1) * 600);
+            });
+
+            console.log("⏳ Loading scene muncul");
+        }, 300); // Delay 300ms — bagi masa fullscreen exit smooth
+    }
+
+    function hideGameLoadingScene() {
+        const overlay = document.getElementById('loadingSceneOverlay');
+        if (overlay) {
+            overlay.classList.remove('open');
+            console.log("✅ Loading scene tutup");
+        }
+    }
 
     // ============================================================
     // 10. USER DASHBOARD
@@ -3260,111 +3361,218 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================================
     // FULLSCREEN — Game Fit Device Screen
     // ============================================================
-    const gameFullscreenBtn = document.getElementById('gameFullscreenBtn');
-    const fullscreenExitBtn = document.getElementById('fullscreenExitBtn');
     const gameFullscreenWrapper = document.getElementById('gameFullscreenWrapper');
 
 
-    // Fungsi masuk fullscreen — guna IFRAME terus
+    // ============================================================
+    // FULLSCREEN — Desktop (Fullscreen API) vs Mobile (Theater Mode)
+    // ============================================================
+    
+    // Detect mobile device
+    function isMobileDevice() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+            || window.innerWidth <= 768;
+    }
+
+    // Masuk fullscreen
     function enterGameFullscreen() {
-        const iframe = document.getElementById('gameIframe');
-        if (!iframe) {
-            console.warn("⚠️ Game iframe tak dijumpai");
+        // Kalau mobile → guna theater mode (CSS)
+        if (isMobileDevice()) {
+            console.log("📱 Mobile — guna Theater Mode");
+            enterTheaterMode();
             return;
         }
 
-        // Semak support
+        // Desktop → guna Fullscreen API pada wrapper
+        const wrapper = document.getElementById('gameFullscreenWrapper') 
+                     || document.querySelector('.iframe-wrapper');
+        
+        if (!wrapper) {
+            console.warn("⚠️ Game wrapper tak dijumpai");
+            return;
+        }
+
         const requestFS = 
-            iframe.requestFullscreen ||
-            iframe.webkitRequestFullscreen ||
-            iframe.mozRequestFullScreen ||
-            iframe.msRequestFullscreen;
+            wrapper.requestFullscreen ||
+            wrapper.webkitRequestFullscreen ||
+            wrapper.mozRequestFullScreen ||
+            wrapper.msRequestFullscreen;
 
         if (!requestFS) {
-            alert("Browser anda tak support fullscreen. Cuba Chrome/Safari terbaru.");
+            console.warn("⚠️ Browser tak support Fullscreen API — guna theater");
+            enterTheaterMode();
             return;
         }
 
         try {
-            const promise = requestFS.call(iframe);
+            const promise = requestFS.call(wrapper);
             
             if (promise && promise.then) {
                 promise
                     .then(() => {
-                        console.log("✅ Fullscreen aktif (iframe)");
-                        // FOCUS iframe supaya keyboard berfungsi
+                        console.log("✅ Fullscreen API aktif");
+                        
+                        // Focus iframe supaya keyboard berfungsi
+                        const iframe = document.getElementById('gameIframe');
                         setTimeout(() => {
                             try {
-                                iframe.focus();
-                                iframe.contentWindow.focus();
-                                console.log("🎯 Iframe focused");
+                                if (iframe && iframe.contentWindow) {
+                                    iframe.focus();
+                                    iframe.contentWindow.focus();
+                                    console.log("🎯 Iframe focused");
+                                }
                             } catch (err) {
                                 console.warn("Focus error:", err);
                             }
                         }, 300);
                     })
                     .catch((err) => {
-                        console.warn("⚠️ Fullscreen ditolak:", err.message);
-                        alert("Fullscreen tak dibenarkan. Cuba klik lagi.");
+                        console.warn("⚠️ Fullscreen API gagal:", err.message);
+                        // Fallback ke theater mode
+                        enterTheaterMode();
                     });
             }
         } catch (err) {
             console.warn("Fullscreen error:", err);
+            enterTheaterMode();
         }
     }
 
-    // Fungsi keluar fullscreen
+    // Theater Mode (untuk mobile — fullscreen fallback)
+    function enterTheaterMode() {
+        const gameScene = document.getElementById('gameScene');
+        if (!gameScene) return;
+        
+        gameScene.classList.add('theater-mode');
+        document.body.style.overflow = 'hidden';
+        
+        const gameFullscreenBtn = document.getElementById('gameFullscreenBtn');
+        if (gameFullscreenBtn) {
+            gameFullscreenBtn.innerHTML = '✕ Keluar';
+        }
+        
+        // Focus iframe supaya keyboard berfungsi
+        const iframe = document.getElementById('gameIframe');
+        setTimeout(() => {
+            try {
+                if (iframe && iframe.contentWindow) {
+                    iframe.focus();
+                    iframe.contentWindow.focus();
+                }
+            } catch (err) {
+                console.warn("Focus error:", err);
+            }
+        }, 300);
+        
+        console.log("📺 Theater mode aktif");
+    }
+
+    // Keluar dari theater mode
+    function exitTheaterMode() {
+        const gameScene = document.getElementById('gameScene');
+        if (!gameScene) return;
+        
+        gameScene.classList.remove('theater-mode');
+        document.body.style.overflow = '';
+        
+        const gameFullscreenBtn = document.getElementById('gameFullscreenBtn');
+        if (gameFullscreenBtn) {
+            gameFullscreenBtn.innerHTML = '⛶ Fullscreen';
+        }
+        
+        console.log("🚪 Theater mode keluar");
+    }
+
+    // Keluar fullscreen (handle both theater mode & fullscreen API)
     function exitGameFullscreen() {
+        // Kalau dalam theater mode, keluar theater
+        const gameScene = document.getElementById('gameScene');
+        if (gameScene && gameScene.classList.contains('theater-mode')) {
+            exitTheaterMode();
+            return;
+        }
+
+        // Kalau dalam fullscreen API, keluar
         const exitFS = 
             document.exitFullscreen ||
             document.webkitExitFullscreen ||
             document.mozCancelFullScreen ||
             document.msExitFullscreen;
 
-        if (exitFS) {
+        if (exitFS && (document.fullscreenElement || document.webkitFullscreenElement)) {
             exitFS.call(document)
-                .then(() => {
-                    console.log("🚪 Keluar fullscreen");
-                })
-                .catch((err) => {
-                    console.warn("Exit error:", err);
-                });
+                .then(() => console.log("🚪 Keluar fullscreen API"))
+                .catch((err) => console.warn(err));
         }
     }
 
-    // Bind button Fullscreen
-    if (gameFullscreenBtn) {
-        gameFullscreenBtn.addEventListener('click', enterGameFullscreen);
+    // Toggle fullscreen (on/off)
+    function toggleGameFullscreen() {
+        const gameScene = document.getElementById('gameScene');
+        const isTheater = gameScene && gameScene.classList.contains('theater-mode');
+        const isFS = document.fullscreenElement || document.webkitFullscreenElement;
+
+        if (isTheater || isFS) {
+            exitGameFullscreen();
+        } else {
+            enterGameFullscreen();
+        }
     }
 
-    // Bind button Keluar
+    // ============================================================
+    // BIND BUTTONS
+    // ============================================================
+    const gameFullscreenBtn = document.getElementById('gameFullscreenBtn');
+    if (gameFullscreenBtn) {
+        gameFullscreenBtn.addEventListener('click', function() {
+            console.log("🎬 Fullscreen button diklik");
+            toggleGameFullscreen();
+        });
+    }
+
+    // Bind button Keluar (dalam fullscreen)
+    const fullscreenExitBtn = document.getElementById('fullscreenExitBtn');
     if (fullscreenExitBtn) {
         fullscreenExitBtn.addEventListener('click', exitGameFullscreen);
     }
 
-    // Track fullscreen change + focus iframe
+    // ============================================================
+    // SYNC BILA FULLSCREEN BERUBAH (contoh: user tekan ESC)
+    // ============================================================
     document.addEventListener('fullscreenchange', () => {
+        const btn = document.getElementById('gameFullscreenBtn');
         const iframe = document.getElementById('gameIframe');
         
         if (document.fullscreenElement) {
-            console.log("📺 Masuk fullscreen");
+            console.log("📺 Fullscreen API aktif");
+            if (btn) btn.innerHTML = '✕ Keluar';
             
-            // Focus iframe supaya keyboard berfungsi
+            // Focus iframe
             if (iframe) {
                 setTimeout(() => {
                     try {
                         iframe.focus();
-                        if (iframe.contentWindow) {
-                            iframe.contentWindow.focus();
-                        }
-                        console.log("🎯 Iframe focused selepas fullscreen");
+                        if (iframe.contentWindow) iframe.contentWindow.focus();
                     } catch (err) {
                         console.warn("Focus error:", err);
                     }
                 }, 300);
             }
         } else {
-            console.log("📺 Keluar fullscreen");
+            console.log("📺 Keluar Fullscreen API");
+            if (btn) btn.innerHTML = '⛶ Fullscreen';
+        }
+    });
+
+    // ============================================================
+    // ESC KEY — Keluar Theater Mode
+    // ============================================================
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const gameScene = document.getElementById('gameScene');
+            if (gameScene && gameScene.classList.contains('theater-mode')) {
+                exitTheaterMode();
+            }
         }
     });
     // ============================================================
