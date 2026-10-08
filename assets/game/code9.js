@@ -55,7 +55,7 @@ gdjs.ENDINGCode.GDC_9595buttonObjects1= [];
 gdjs.ENDINGCode.GDC_9595buttonObjects2= [];
 
 
-gdjs.ENDINGCode.userFunc0x9716f0 = function GDJSInlineCode(runtimeScene) {
+gdjs.ENDINGCode.userFunc0x1569750 = function GDJSInlineCode(runtimeScene) {
 "use strict";
 // Kira skor dan kod Holland
 let scores = [
@@ -111,7 +111,7 @@ gdjs.ENDINGCode.eventsList0 = function(runtimeScene) {
 {
 
 
-gdjs.ENDINGCode.userFunc0x9716f0(runtimeScene);
+gdjs.ENDINGCode.userFunc0x1569750(runtimeScene);
 
 }
 

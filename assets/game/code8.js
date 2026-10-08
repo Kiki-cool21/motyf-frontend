@@ -388,7 +388,7 @@ gdjs.copyArray(runtimeScene.getObjects("DialogueText"), gdjs.KONVENSIONAL2Code.G
 {runtimeScene.getGame().getVariables().getFromIndex(0).setNumber(1);
 }
 {for(var i = 0, len = gdjs.KONVENSIONAL2Code.GDDialogueTextObjects2.length ;i < len;++i) {
-    gdjs.KONVENSIONAL2Code.GDDialogueTextObjects2[i].getBehavior("Text").setText(runtimeScene.getScene().getVariables().getFromIndex(9).getChild(runtimeScene.getScene().getVariables().getFromIndex(6).getAsNumber()).getAsString() + gdjs.evtTools.string.newLine() + "Score: " + gdjs.evtTools.common.toString(runtimeScene.getScene().getVariables().getFromIndex(5).getAsNumber()) + "/30 - You earned the key!");
+    gdjs.KONVENSIONAL2Code.GDDialogueTextObjects2[i].getBehavior("Text").setText(runtimeScene.getScene().getVariables().getFromIndex(9).getChild(runtimeScene.getScene().getVariables().getFromIndex(6).getAsNumber()).getAsString() + gdjs.evtTools.string.newLine());
 }
 }
 elseEventsChainSatisfied = true;
