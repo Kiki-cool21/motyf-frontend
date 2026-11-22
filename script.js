@@ -5,7 +5,167 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    // ============================================================
+    // ENCOURAGEMENT SCREEN LOGIC (LOADING & MOTIVASI)
+    // ============================================================
+    const motivationQuotes = [
+        "Setiap orang ada laluan yang berbeza. Anda sedang mencari milik anda.",
+        "Tidak apa-apa untuk belum tahu. Perjalanan ini adalah tentang penerokaan.",
+        "Kerjaya impian tidak semestinya satu, ia boleh berubah mengikut masa.",
+        "Kegagalan hari ini adalah asas untuk kejayaan esok.",
+        "Jangan bandingkan proses anda dengan orang lain. Fokus pada langkah anda sendiri."
+    ];
 
+    let loadingInterval;
+    let quoteInterval;
+
+    function startEncouragementLoading() {
+        // Ambil ID baharu yang sepadan dengan HTML penuh skrin
+        const barFill = document.getElementById('loadingBarFill');
+        const percentageText = document.getElementById('loadingPercentage');
+        const continueBtn = document.getElementById('encouragementContinueBtn');
+        const quoteEl = document.getElementById('motivationQuote');
+        const statusEl = document.getElementById('loadingStatus');
+        
+        // Reset
+        if (barFill) barFill.style.width = '0%';
+        if (percentageText) percentageText.textContent = '0%';
+        if (quoteEl) quoteEl.textContent = motivationQuotes[0];
+        if (statusEl) statusEl.textContent = "Memuatkan perjalanan...";
+        
+
+
+        let progress = 0;
+        let quoteIndex = 0;
+        const totalDuration = 4000; // 4 saat
+        const intervalTime = 50; // Update setiap 50ms
+        const step = 100 / (totalDuration / intervalTime);
+
+        // Tukar ayat motivasi setiap 1.5 saat
+        quoteInterval = setInterval(() => {
+            quoteIndex = (quoteIndex + 1) % motivationQuotes.length;
+            if (quoteEl) {
+                quoteEl.style.opacity = 0; // Fade out
+                setTimeout(() => {
+                    quoteEl.textContent = motivationQuotes[quoteIndex];
+                    quoteEl.style.opacity = 1; // Fade in
+                }, 300);
+            }
+        }, 1500);
+
+        // Progress bar bergerak
+        loadingInterval = setInterval(() => {
+            progress += step;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(loadingInterval);
+                clearInterval(quoteInterval);
+                if (barFill) barFill.style.width = '100%';
+                if (percentageText) percentageText.textContent = '100%';
+                
+                setTimeout(() => {
+                    finishEncouragement();
+                }, 500); // Tunggu sikit sebelum pergi ke skrin seterusnya
+            } else {
+                if (barFill) barFill.style.width = `${Math.floor(progress)}%`;
+                if (percentageText) percentageText.textContent = `${Math.floor(progress)}%`;
+            }
+        }, intervalTime);
+    }
+    function finishEncouragement() {
+        clearInterval(loadingInterval);
+        clearInterval(quoteInterval);
+        
+        // Terus ke Game Scene, bukan tutorial
+        proceedToGameScene(); 
+    }
+    // ============================================================
+    // CAREER QUESTION (PILIHAN YA) — FULL SCREEN LOADING
+    // ============================================================
+    const careerFacts = [
+        "Kerjaya impian bermula dengan langkah pertama yang berani.",
+        "90% pekerjaan masa depan memerlukan kemahiran digital dan kreativiti.",
+        "Meneroka minat anda hari ini akan membantu memilih haluan yang tepat.",
+        "Setiap kerjaya hebat bermula dengan rasa ingin tahu yang tinggi.",
+        "Kemahiran boleh dipelajari, tetapi minat dan usaha adalah kunci utama."
+    ];
+
+    let careerLoadingInterval;
+    let careerFactInterval;
+
+    function startCareerLoading() {
+        const barFill = document.getElementById('careerLoadingBarFill');
+        const percentageText = document.getElementById('careerLoadingPercentage');
+        const factEl = document.getElementById('careerFactText');
+        const statusEl = document.getElementById('careerLoadingStatus');
+        
+        // Reset
+        if (barFill) barFill.style.width = '0%';
+        if (percentageText) percentageText.textContent = '0%';
+        if (factEl) factEl.textContent = careerFacts[0];
+        if (statusEl) statusEl.textContent = "Menyediakan maklumat kerjaya...";
+
+        let progress = 0;
+        let factIndex = 0;
+        const totalDuration = 4000; // 4 saat
+        const intervalTime = 50; 
+        const step = 100 / (totalDuration / intervalTime);
+
+        // Tukar fakta setiap 1.5 saat
+        careerFactInterval = setInterval(() => {
+            factIndex = (factIndex + 1) % careerFacts.length;
+            if (factEl) {
+                factEl.style.opacity = 0; 
+                setTimeout(() => {
+                    factEl.textContent = careerFacts[factIndex];
+                    factEl.style.opacity = 1; 
+                }, 300);
+            }
+        }, 1500);
+
+        // Progress bar bergerak
+        careerLoadingInterval = setInterval(() => {
+            progress += step;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(careerLoadingInterval);
+                clearInterval(careerFactInterval);
+                if (barFill) barFill.style.width = '100%';
+                if (percentageText) percentageText.textContent = '100%';
+                
+                setTimeout(() => {
+                    finishCareerLoading();
+                }, 500);
+            } else {
+                if (barFill) barFill.style.width = `${Math.floor(progress)}%`;
+                if (percentageText) percentageText.textContent = `${Math.floor(progress)}%`;
+            }
+        }, intervalTime);
+    }
+
+    function finishCareerLoading() {
+        clearInterval(careerLoadingInterval);
+        clearInterval(careerFactInterval);
+        
+        // Terus ke Game Scene, bukan tutorial
+        proceedToGameScene(); 
+    }
+
+    // ============================================================
+    // TOAST NOTIFICATION HELPER
+    // ============================================================
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `motyf-toast ${type}`;
+        toast.innerHTML = `<span>✨</span> ${message}`;
+
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.classList.add('hide');
+            setTimeout(() => toast.remove(), 400);
+        }, 3500);
+    }
     // ============================================================
     // TUTORIAL MODAL — Variables
     // ============================================================
@@ -277,7 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // SIGN UP
+// SIGN UP
     const signupForm = document.getElementById('signupForm');
     if (signupForm) {
         // ============================================================
@@ -310,11 +470,84 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        // ============================================================
+        // LIVE VALIDATION UNTUK SIGN UP (BAHAGIAN BAHARU)
+        // ============================================================
+        const signupUsernameInput = document.getElementById('signupUsername');
+        const signupKelasInput = document.getElementById('signupKelas');
+        const signupPasswordInput = document.getElementById('signupPassword');
+        const signupConfirmPasswordInput = document.getElementById('signupConfirmPassword');
+
+        // Fungsi bantuan untuk tunjuk/hilang ralat
+        function setFieldError(inputId, errorId, message) {
+            const input = document.getElementById(inputId);
+            const errorEl = document.getElementById(errorId);
+            if (!input || !errorEl) return;
+
+            if (message) {
+                errorEl.textContent = message;
+                input.classList.add('input-error');
+            } else {
+                errorEl.textContent = '';
+                input.classList.remove('input-error');
+            }
+        }
+
+        if (signupUsernameInput) {
+            signupUsernameInput.addEventListener('input', () => {
+                if (signupUsernameInput.value.trim() === '') {
+                    setFieldError('signupUsername', 'signupUsernameError', 'Username tidak boleh kosong.');
+                } else {
+                    setFieldError('signupUsername', 'signupUsernameError', '');
+                }
+            });
+        }
+
+        if (signupKelasInput) {
+            signupKelasInput.addEventListener('input', () => {
+                const userType = document.getElementById('signupUserType').value;
+                if (userType === 'pelajar' && signupKelasInput.value.trim() === '') {
+                    setFieldError('signupKelas', 'signupKelasError', 'Kelas diperlukan untuk pelajar.');
+                } else {
+                    setFieldError('signupKelas', 'signupKelasError', '');
+                }
+            });
+        }
+
+        // Validasi Password & Confirm Password
+        function validatePasswords() {
+            const pass = signupPasswordInput ? signupPasswordInput.value : '';
+            const confirm = signupConfirmPasswordInput ? signupConfirmPasswordInput.value : '';
+            
+            if (confirm && pass !== confirm) {
+                setFieldError('signupConfirmPassword', 'signupConfirmError', 'Password tidak sepadan.');
+            } else {
+                setFieldError('signupConfirmPassword', 'signupConfirmError', '');
+            }
+        }
+
+        if (signupPasswordInput) {
+            signupPasswordInput.addEventListener('input', () => {
+                if (signupPasswordInput.value === '') {
+                    setFieldError('signupPassword', 'signupPasswordError', 'Password tidak boleh kosong.');
+                } else {
+                    setFieldError('signupPassword', 'signupPasswordError', '');
+                }
+                validatePasswords(); // Semak semula confirm jika password berubah
+            });
+        }
+
+        if (signupConfirmPasswordInput) {
+            signupConfirmPasswordInput.addEventListener('input', validatePasswords);
+        }
+
+        // ============================================================
+        // SUBMIT SIGN UP (LOGIK ASAL DIKEKALKAN)
+        // ============================================================
         signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             resetErrors();
 
-            // 1. Ambil elemen butang submit
             const submitBtn = signupForm.querySelector('button[type="submit"]');
 
             const username = document.getElementById('signupUsername').value.trim();
@@ -327,26 +560,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let isValid = true;
 
-            if (!username) {
-                showError('signupUsernameError', 'Username diperlukan.');
-                isValid = false;
-            }
-
-            if (userType === 'pelajar' && !kelas) {
-                showError('signupKelasError', 'Kelas diperlukan.');
-                isValid = false;
-            }
-
-            if (!password) {
-                showError('signupPasswordError', 'Password diperlukan.');
-                isValid = false;
-            }
-
-            if (!confirmPassword) {
-                showError('signupConfirmError', 'Sila confirm password.');
-                isValid = false;
-            }
-
+            if (!username) { showError('signupUsernameError', 'Username diperlukan.'); isValid = false; }
+            if (userType === 'pelajar' && !kelas) { showError('signupKelasError', 'Kelas diperlukan.'); isValid = false; }
+            if (!password) { showError('signupPasswordError', 'Password diperlukan.'); isValid = false; }
+            if (!confirmPassword) { showError('signupConfirmError', 'Sila confirm password.'); isValid = false; }
             if (password && confirmPassword && password !== confirmPassword) {
                 showError('signupConfirmError', 'Password tidak sepadan.');
                 isValid = false;
@@ -354,30 +571,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!isValid) return;
 
-            // 2. Bungkus dengan withButtonLoading
             await withButtonLoading(submitBtn, async () => {
                 try {
                     const res = await fetch('https://motyf-backend.onrender.com/api/signup', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            username,
-                            kelas,
-                            password,
-                            userType
-                        })
+                        body: JSON.stringify({ username, kelas, password, userType })
                     });
 
                     const data = await res.json();
 
                     if (!res.ok) {
+                        // Kekal di borang signup jika ralat
                         showError('signupGlobalError', data.message);
                         return;
                     }
 
-                    signupForm.reset();
+                    // --- BERJAYA: AUTO-LOGIN ---
+                    
+                    // 1. Simpan sesi (guna fungsi setCurrentUser yang sama macam login)
+                    const newUser = data.user || { username: username, kelas: kelas, userType: userType, createdAt: new Date().toISOString() };
+                    setCurrentUser(newUser);
+                    updateUserProfileUI();
 
-                    // Reset user type ke default
+                    // 2. Papar Toast Notifikasi
+                    showToast(`Akaun berjaya dicipta! Selamat datang, ${username}`);
+
+                    // 3. Reset form
+                    signupForm.reset();
                     const resetTypePelajarBtn = document.getElementById('typePelajarBtn');
                     const resetTypeLuarBtn = document.getElementById('typeLuarBtn');
                     const resetSignupUserTypeInput = document.getElementById('signupUserType');
@@ -388,18 +609,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (resetSignupUserTypeInput) resetSignupUserTypeInput.value = 'pelajar';
                     if (resetKelasFieldGroup) resetKelasFieldGroup.classList.remove('hidden');
 
-                    // Set flag — trigger guide tutorial selepas login
-                    localStorage.setItem('motyf_show_guide', 'true');
+                    // 4. Set flag guide tutorial (sama macam aliran login biasa)
+                    localStorage.setItem('motyf_after_guide', 'career-question');
 
-                    showScene('loginScene');
-                    document.getElementById('loginUsername').value = username;
-                    document.getElementById('loginPassword').focus();
+                    // 5. Terus ke halaman utama (Landing) dan mula tutorial
+                    showScene('landingScene');
+                    setTimeout(() => {
+                        startGuideTutorial(); // Panggil tutorial guide
+                    }, 500);
 
                 } catch (err) {
                     console.error(err);
                     showError('signupGlobalError', 'Ralat sambungan. Pastikan backend berjalan.');
                 }
-            }, { mode: 'text', text: 'Mendaftar...' }); // 3. Teks loading
+            }, { mode: 'text', text: 'Mendaftar...' });
         });
     }
         // LOGIN
@@ -506,15 +729,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 user.careerDirection = direction;
                 setCurrentUser(user);
 
-                if (direction === 'YA') {
-                    // YA → Tutorial → Game Scene
-                    showGameTutorial(() => {
-                        proceedToGameScene();
-                    });
-                } else {
-                    // TIDAK → Reason Question
-                    proceedToReasonQuestion();
-                }
+            if (direction === 'YA') {
+                // 1. Tukar scene dulu (Ini akan trigger animasi opacity)
+                showScene('careerLoadingScene');
+                
+                // 2. Beri masa sedikit untuk transition sebelum mula loading (optional, untuk elak glitch)
+                setTimeout(() => {
+                    if (typeof startCareerLoading === 'function') {
+                        startCareerLoading();
+                    }
+                }, 100); // 100ms delay kecil untuk bagi CSS transition berjalan
+            } else {
+                proceedToReasonQuestion();
+            }
 
             } catch (err) {
                 console.error(err);
@@ -593,6 +820,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     // Pergi ke Encouragement Scene
                     showScene('encouragementScene');
+                    startEncouragementLoading(); // <-- Tambah baris ini
 
                 } catch (err) {
                     console.error(err);
@@ -3359,10 +3587,17 @@ document.addEventListener('DOMContentLoaded', () => {
         // Event listeners
         if (tutorialNextBtn) tutorialNextBtn.addEventListener('click', nextTutorialSlide);
         if (tutorialPrevBtn) tutorialPrevBtn.addEventListener('click', prevTutorialSlide);
-        if (tutorialSkipBtn) tutorialSkipBtn.addEventListener('click', closeTutorial);
+        if (tutorialSkipBtn) {
+            tutorialSkipBtn.addEventListener('click', () => {
+                closeTutorial();
+                proceedToGameScene(); // <--- Tambah ini
+            });
+        }
+
         if (tutorialStartBtn) {
             tutorialStartBtn.addEventListener('click', () => {
                 closeTutorial();
+                proceedToGameScene(); // <--- Tambah ini
             });
         }
 
@@ -3372,21 +3607,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (e.key === 'ArrowRight') nextTutorialSlide();
             if (e.key === 'ArrowLeft') prevTutorialSlide();
-            if (e.key === 'Escape') closeTutorial();
+            if (e.key === 'Escape') {
+                closeTutorial();
+                proceedToGameScene(); // <--- Tambah baris ini
+            }
         });
-        // ============================================================
-        // ENCOURAGEMENT SCENE — Button Teruskan
-        // ============================================================
-        const encouragementContinueBtn = document.getElementById('encouragementContinueBtn');
-        if (encouragementContinueBtn) {
-            encouragementContinueBtn.addEventListener('click', () => {
-                console.log("✅ User teruskan dari encouragement scene");
-                // Tunjuk tutorial dulu, kemudian Game Scene
-                showGameTutorial(() => {
-                    proceedToGameScene();
-                });
-            });
-        }
+
+
         // ============================================================
         // STOP GAME — Bila keluar dari Game Scene
         // ============================================================
@@ -3420,14 +3647,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const gameTutorialBtn = document.getElementById('gameTutorialBtn');
         if (gameTutorialBtn) {
             gameTutorialBtn.addEventListener('click', () => {
-                console.log("📖 User nak tengok tutorial semula");
-
+                console.log("ℹ️ User nak tengok tutorial semula");
+                
                 // Buka tutorial tanpa proceed ke mana-mana
-                // Callback kosong — bila tutup, user kekal di Game Scene
                 showGameTutorial(() => {
                     console.log("✅ Tutorial ditutup — user kekal di Game Scene");
                     // Tak buat apa-apa — user tetap di Game Scene
                 });
+
             });
         }
         // ============================================================
@@ -3890,30 +4117,26 @@ window.generateLearningPath = async function(careerName) {
     
     // Paparan Loading
     modalBody.innerHTML = `
-        <div style="text-align: center; padding: 2rem;">
+        <div style="text-align: center; padding: 2rem; width: 100%;">
             <div class="loading-spinner" style="width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #ec4899; border-radius: 50%; animation: btnSpinner 0.7s linear infinite; margin: 0 auto 1rem auto;"></div>
             <p style="color: #ec4899; font-style: italic;">AI sedang menganalisis...</p>
         </div>
     `;
     modal.style.display = 'flex';
 
-        // Ambil kod dari pelbagai sumber
-        let userRiasec = localStorage.getItem('userRiasec');
-        
-        // Jika tiada, cuba ambil dari profil pengguna (motyf_current_user)
-        if (!userRiasec) {
-            try {
-                const currentUser = JSON.parse(localStorage.getItem('motyf_current_user'));
-                if (currentUser && currentUser.imkCode) {
-                    userRiasec = currentUser.imkCode;
-                }
-            } catch (e) {
-                console.error("Ralat baca profil user:", e);
+    // Ambil kod dari pelbagai sumber
+    let userRiasec = localStorage.getItem('userRiasec');
+    if (!userRiasec) {
+        try {
+            const currentUser = JSON.parse(localStorage.getItem('motyf_current_user'));
+            if (currentUser && currentUser.imkCode) {
+                userRiasec = currentUser.imkCode;
             }
+        } catch (e) {
+            console.error("Ralat baca profil user:", e);
         }
-        
-        // Jika masih tiada, baru guna default KIS
-        userRiasec = userRiasec || 'KIS'; 
+    }
+    userRiasec = userRiasec || 'KIS'; 
 
     try {
         const isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
@@ -3927,37 +4150,135 @@ window.generateLearningPath = async function(careerName) {
 
         const data = await response.json();
         
-        // Semak sama ada data yang diterima betul
         if (!response.ok || data.error || !data.choices) {
             let errorMsg = "Ralat tidak diketahui";
-            if (data.error) {
-                errorMsg = data.error.message || JSON.stringify(data.error);
-            } else {
-                errorMsg = JSON.stringify(data);
-            }
+            if (data.error) errorMsg = data.error.message || JSON.stringify(data.error);
+            else errorMsg = JSON.stringify(data);
             throw new Error(errorMsg);
         }
 
-        // Ambil teks AI
-        const aiText = data.choices[0].message.content;
+        let aiText = data.choices[0].message.content;
         console.log("✅ [TEST] Teks AI berjaya diterima dari backend!");
 
-        // Tukar Markdown kepada HTML menggunakan marked.js
-        const formattedHtml = marked.parse(aiText);
+        // --- PROSES JSON ---
+        // Bersihkan teks AI (buang markdown ```json ... ``` jika ada)
+        aiText = aiText.replace(/```json/g, '').replace(/```/g, '').trim();
+        
+        let aiData;
+        try {
+            aiData = JSON.parse(aiText);
+        } catch (e) {
+            // Fallback: Jika AI gagal beri JSON, papar teks biasa menggunakan marked.js
+            console.warn("AI tidak memulangkan JSON yang sah. Menggunakan fallback teks.");
+            let formattedHtml = marked.parse(aiText);
+            modalBody.innerHTML = `
+                <div class="ai-markdown-content" style="text-align: left; color: #fff; line-height: 1.6; font-size: 0.95rem;">
+                    ${formattedHtml}
+                </div>
+            `;
+            return;
+        }
 
-        // Paparkan teks AI ke dalam modal
+        // --- BINA SUSUN ATUR DUA KOLUM ---
+        // Kita gantikan kandungan modalBody dengan struktur dua kolum
         modalBody.innerHTML = `
-            <div class="ai-markdown-content" style="text-align: left; color: #fff; line-height: 1.6; font-size: 0.95rem;">
-                ${formattedHtml}
+            <div id="phaseFlowchart">
+                <!-- Carta alir akan dijana di sini -->
+            </div>
+            <div id="phaseDetailsPanel">
+                <div class="phase-details-content">
+                    <h3 id="detailTitle">Pilih Fasa</h3>
+                    <p id="detailObjective">Sila klik pada mana-mana fasa di sebelah kiri untuk melihat butiran.</p>
+                    <div id="detailChecklist" class="checklist-container"></div>
+                </div>
             </div>
         `;
-        
-        console.log("✅ [TEST] Teks AI berjaya dipaparkan ke skrin!");
+
+        const flowchartContainer = document.getElementById('phaseFlowchart');
+
+        // Bina Nod "Mula"
+        const startNode = document.createElement('div');
+        startNode.className = 'phase-node';
+        startNode.textContent = 'Mula';
+        startNode.onclick = () => showPhaseDetails('mula', null, startNode);
+        flowchartContainer.appendChild(startNode);
+
+        // Bina Nod Fasa dari JSON
+        if (aiData.phases && Array.isArray(aiData.phases)) {
+            aiData.phases.forEach((phase) => {
+                // Anak Panah
+                const arrow = document.createElement('div');
+                arrow.className = 'flow-arrow';
+                arrow.textContent = '↓';
+                flowchartContainer.appendChild(arrow);
+
+                // Nod Fasa
+                const node = document.createElement('div');
+                node.className = 'phase-node';
+                node.textContent = phase.title;
+                node.dataset.phaseId = phase.id;
+                node.onclick = () => {
+                    document.querySelectorAll('.phase-node').forEach(n => n.classList.remove('active'));
+                    node.classList.add('active');
+                    showPhaseDetails(phase.id, phase, node);
+                };
+                flowchartContainer.appendChild(node);
+            });
+        }
+
+        // Fungsi untuk papar butiran di panel kanan
+        function showPhaseDetails(id, phaseData, clickedNode) {
+            const detailTitle = document.getElementById('detailTitle');
+            const detailObjective = document.getElementById('detailObjective');
+            const detailChecklist = document.getElementById('detailChecklist');
+
+            if (id === 'mula' || !phaseData) {
+                detailTitle.textContent = 'Mula';
+                detailObjective.textContent = 'Pilih fasa di sebelah kiri untuk melihat butiran.';
+                detailChecklist.innerHTML = '';
+                return;
+            }
+
+            detailTitle.textContent = phaseData.title;
+            detailObjective.textContent = phaseData.objective;
+            detailChecklist.innerHTML = '';
+
+            if (phaseData.checklist && Array.isArray(phaseData.checklist)) {
+                phaseData.checklist.forEach((item) => {
+                    const label = document.createElement('label');
+                    label.className = 'checklist-item';
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    
+                    checkbox.addEventListener('change', () => {
+                        const allChecked = [...detailChecklist.querySelectorAll('input')].every(c => c.checked);
+                        if (allChecked) clickedNode.classList.add('completed');
+                        else clickedNode.classList.remove('completed');
+                    });
+
+                    const span = document.createElement('span');
+                    span.textContent = item;
+
+                    label.appendChild(checkbox);
+                    label.appendChild(span);
+                    detailChecklist.appendChild(label);
+                });
+            }
+        }
+
+        // Auto-klik Fasa 1 supaya panel kanan tidak kosong
+        setTimeout(() => {
+            const firstPhaseNode = flowchartContainer.querySelectorAll('.phase-node')[1]; 
+            if (firstPhaseNode) firstPhaseNode.click();
+        }, 100);
+
+        console.log("✅ [TEST] Carta alir dan butiran berjaya dipaparkan!");
 
     } catch (error) {
-        console.error("❌ Ralat AI:", error);
+        console.error("Ralat AI:", error);
         modalBody.innerHTML = `
-            <div style="text-align: center; padding: 2rem;">
+            <div style="text-align: center; padding: 2rem; width: 100%;">
                 <p style="color: #ff6b6b; font-weight: bold;">Ralat Sistem:</p>
                 <p style="color: #ccc; font-size: 0.9rem; word-break: break-all;">${error.message}</p>
                 <button onclick="document.getElementById('aiPathModal').style.display='none'" 
@@ -3968,6 +4289,7 @@ window.generateLearningPath = async function(careerName) {
         `;
     }
 };
+        
 window.closeAiPathModal = function() {
     const modal = document.getElementById('aiPathModal');
     if (modal) modal.style.display = 'none';
