@@ -2647,6 +2647,25 @@ document.addEventListener('DOMContentLoaded', () => {
             if (eduEl) eduEl.textContent = career.education || '-';
             if (pathEl) pathEl.textContent = career.path || '-';
 
+            
+            // --- LOGIK BUTANG PELAN AI ---
+            const careerPlanAiBtn = document.getElementById('careerPlanAiBtn');
+            if (careerPlanAiBtn) {
+                // Gunakan onclick untuk elak event listener berulang
+                careerPlanAiBtn.onclick = () => {
+                    // 1. Tutup modal butiran kerjaya menggunakan kaedah yang sama seperti fungsi tutup
+                    const careerModal = document.getElementById('careerModal');
+                    if (careerModal) {
+                        careerModal.classList.remove('open'); // <--- Tukar kepada ini
+                    }
+
+                    // 2. Buka modal Pelan AI
+                    if (typeof window.generateLearningPath === 'function') {
+                        window.generateLearningPath(career.name);
+                    }
+                };
+            }
+            // -----------------------------
             const renderTags = (container, items) => {
                 if (!container) return;
                 container.innerHTML = '';
