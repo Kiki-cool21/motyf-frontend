@@ -4133,6 +4133,7 @@ window.generateLearningPath = async function(careerName) {
     if (!modal || !modalTitle || !modalBody) return;
 
     modalTitle.textContent = `Pelan Pembelajaran: ${careerName}`;
+    window.currentCareerName = careerName;
     
     // Paparan Loading
     modalBody.innerHTML = `
@@ -4142,6 +4143,15 @@ window.generateLearningPath = async function(careerName) {
         </div>
     `;
     modal.style.display = 'flex';
+    // Di dalam fungsi window.generateLearningPath, selepas modal.style.display = 'flex';
+    const aiChatMessages = document.getElementById('aiChatMessages');
+    if (aiChatMessages) {
+        aiChatMessages.innerHTML = `
+            <div style="background: rgba(255,255,255,0.1); padding: 10px 15px; border-radius: 12px; color: #e5e7eb; max-width: 80%; align-self: flex-start;">
+                Sila taip soalan anda tentang kerjaya ini.
+            </div>
+        `;
+    }
 
     // Ambil kod RIASEC
     let userRiasec = localStorage.getItem('userRiasec');
@@ -4461,7 +4471,7 @@ window.sendChatMessage = async function() {
 
         // Hantar data ke backend
         const payload = {
-            careerName: "MoTYF Career Assistant",
+            careerName: window.currentCareerName || "MoTYF Career Assistant",
             careerDetails: {},
             messages: [{ role: "user", text: text }]
         };
