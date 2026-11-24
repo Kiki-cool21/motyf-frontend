@@ -4124,17 +4124,13 @@ window.generateLearningPath = async function(careerName) {
     `;
     modal.style.display = 'flex';
 
-    // Ambil kod dari pelbagai sumber
+    // Ambil kod RIASEC
     let userRiasec = localStorage.getItem('userRiasec');
     if (!userRiasec) {
         try {
             const currentUser = JSON.parse(localStorage.getItem('motyf_current_user'));
-            if (currentUser && currentUser.imkCode) {
-                userRiasec = currentUser.imkCode;
-            }
-        } catch (e) {
-            console.error("Ralat baca profil user:", e);
-        }
+            if (currentUser && currentUser.imkCode) userRiasec = currentUser.imkCode;
+        } catch (e) {}
     }
     userRiasec = userRiasec || 'KIS'; 
 
@@ -4150,111 +4146,152 @@ window.generateLearningPath = async function(careerName) {
 
         const data = await response.json();
         
-        if (!response.ok || data.error || !data.choices) {
-            let errorMsg = "Ralat tidak diketahui";
-            if (data.error) errorMsg = data.error.message || JSON.stringify(data.error);
-            else errorMsg = JSON.stringify(data);
-            throw new Error(errorMsg);
-        }
+        if (!response.ok || data.error || !data.choices) throw new Error("Ralat AI");
 
         let aiText = data.choices[0].message.content;
-        console.log("✅ [TEST] Teks AI berjaya diterima dari backend!");
-
-        // --- PROSES JSON ---
-        // Bersihkan teks AI (buang markdown ```json ... ``` jika ada)
-        aiText = aiText.replace(/```json/g, '').replace(/```/g, '').trim();
         
-        let aiData;
+        // Proses JSON yang kukuh (Regex)
+        let aiData = null;
         try {
             aiData = JSON.parse(aiText);
-        } catch (e) {
-            // Fallback: Jika AI gagal beri JSON, papar teks biasa menggunakan marked.js
-            console.warn("AI tidak memulangkan JSON yang sah. Menggunakan fallback teks.");
-            let formattedHtml = marked.parse(aiText);
-            modalBody.innerHTML = `
-                <div class="ai-markdown-content" style="text-align: left; color: #fff; line-height: 1.6; font-size: 0.95rem;">
-                    ${formattedHtml}
-                </div>
-            `;
+        } catch (e1) {
+            const jsonMatch = aiText.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                try { aiData = JSON.parse(jsonMatch[0]); } catch (e2) {}
+            }
+        }
+
+        if (!aiData || !aiData.phases) {
+            // Fallback teks
+            modalBody.innerHTML = `<div class="ai-markdown-content" style="padding:20px; color:#fff;">${marked.parse(aiText)}</div>`;
             return;
         }
 
+        // Simpan data untuk fungsi salin/muat turun
+        window.currentCareerPlan = { careerName, phases: aiData.phases };
+
         // --- BINA SUSUN ATUR DUA KOLUM ---
-        // Kita gantikan kandungan modalBody dengan struktur dua kolum
         modalBody.innerHTML = `
-            <div id="phaseFlowchart">
-                <!-- Carta alir akan dijana di sini -->
-            </div>
-            <div id="phaseDetailsPanel">
+            <div id="phaseFlowchart" class="phase-flowchart"></div>
+            <div id="phaseDetailsPanel" class="phase-details-panel">
                 <div class="phase-details-content">
-                    <h3 id="detailTitle">Pilih Fasa</h3>
-                    <p id="detailObjective">Sila klik pada mana-mana fasa di sebelah kiri untuk melihat butiran.</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h3 id="detailTitle" style="color: #ec4899; margin: 0;">Pilih Fasa</h3>
+                        <span id="progressIndicator" style="color: #9ca3af; font-size: 0.9rem;"></span>
+                    </div>
+                    <p id="detailObjective" style="color: #d1d5db; line-height: 1.6; margin-bottom: 1.5rem;">Sila klik pada fasa di kiri.</p>
+                    
                     <div id="detailChecklist" class="checklist-container"></div>
+
+                    <!-- Bahagian Cabaran Mini -->
+                    <div id="miniChallengeSection" style="margin-top: 20px; padding-top: 15px; border-top: 1px dashed rgba(255,255,255,0.2);">
+                        <h4 style="color: #fbbf24; margin-bottom: 8px;">⚡ Langkah Praktikal / Cabaran Mini</h4>
+                        <p id="miniChallengeText" style="color: #e5e7eb; font-size: 0.9rem; margin-bottom: 15px;"></p>
+                        <button id="askAiPhaseBtn" style="background: linear-gradient(135deg, #a855f7, #ec4899); color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 0.85rem;">
+                            🤖 Tanya AI tentang Fasa Ini
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Butang Muat Turun & Salin di bawah panel -->
+                <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                    <button id="downloadPlanBtn" style="background: #475569; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">📥 Muat Turun</button>
+                    <button id="copyPlanBtn" style="background: #475569; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">📋 Salin Ringkasan</button>
                 </div>
             </div>
         `;
 
         const flowchartContainer = document.getElementById('phaseFlowchart');
+        const progressIndicator = document.getElementById('progressIndicator');
+        const detailTitle = document.getElementById('detailTitle');
+        const detailObjective = document.getElementById('detailObjective');
+        const detailChecklist = document.getElementById('detailChecklist');
+        const miniChallengeText = document.getElementById('miniChallengeText');
+        const askAiPhaseBtn = document.getElementById('askAiPhaseBtn');
+
+        let activePhaseId = null;
+
+        // Fungsi Simpan & Muat Status
+        const getChecklistStorageKey = (career, phaseId) => `motyf_plan_${career}_${phaseId}`;
+        
+        function loadChecklistState(career, phaseId, checklistLength) {
+            const saved = localStorage.getItem(getChecklistStorageKey(career, phaseId));
+            if (saved) {
+                try { return JSON.parse(saved); } catch(e) { return new Array(checklistLength).fill(false); }
+            }
+            return new Array(checklistLength).fill(false);
+        }
+
+        function saveChecklistState(career, phaseId, state) {
+            localStorage.setItem(getChecklistStorageKey(career, phaseId), JSON.stringify(state));
+        }
 
         // Bina Nod "Mula"
         const startNode = document.createElement('div');
         startNode.className = 'phase-node';
         startNode.textContent = 'Mula';
-        startNode.onclick = () => showPhaseDetails('mula', null, startNode);
+        startNode.onclick = () => {
+            document.querySelectorAll('.phase-node').forEach(n => n.classList.remove('active'));
+            startNode.classList.add('active');
+            activePhaseId = 'mula';
+            detailTitle.textContent = 'Mula';
+            detailObjective.textContent = 'Sila pilih fasa di sebelah kiri untuk melihat butiran dan cabaran mini.';
+            detailChecklist.innerHTML = '';
+            miniChallengeText.textContent = '-';
+            progressIndicator.textContent = '';
+            askAiPhaseBtn.style.display = 'none';
+        };
         flowchartContainer.appendChild(startNode);
 
-        // Bina Nod Fasa dari JSON
-        if (aiData.phases && Array.isArray(aiData.phases)) {
-            aiData.phases.forEach((phase) => {
-                // Anak Panah
-                const arrow = document.createElement('div');
-                arrow.className = 'flow-arrow';
-                arrow.textContent = '↓';
-                flowchartContainer.appendChild(arrow);
+        // Bina Nod Fasa
+        aiData.phases.forEach((phase) => {
+            const arrow = document.createElement('div');
+            arrow.className = 'flow-arrow';
+            arrow.textContent = '↓';
+            flowchartContainer.appendChild(arrow);
 
-                // Nod Fasa
-                const node = document.createElement('div');
-                node.className = 'phase-node';
-                node.textContent = phase.title;
-                node.dataset.phaseId = phase.id;
-                node.onclick = () => {
-                    document.querySelectorAll('.phase-node').forEach(n => n.classList.remove('active'));
-                    node.classList.add('active');
-                    showPhaseDetails(phase.id, phase, node);
-                };
-                flowchartContainer.appendChild(node);
-            });
-        }
+            const node = document.createElement('div');
+            node.className = 'phase-node';
+            node.textContent = phase.title;
+            node.dataset.phaseId = phase.id;
+            
+            node.onclick = () => {
+                document.querySelectorAll('.phase-node').forEach(n => n.classList.remove('active'));
+                node.classList.add('active');
+                activePhaseId = phase.id;
+                showPhaseDetails(phase, node);
+            };
+            flowchartContainer.appendChild(node);
+        });
 
-        // Fungsi untuk papar butiran di panel kanan
-        function showPhaseDetails(id, phaseData, clickedNode) {
-            const detailTitle = document.getElementById('detailTitle');
-            const detailObjective = document.getElementById('detailObjective');
-            const detailChecklist = document.getElementById('detailChecklist');
-
-            if (id === 'mula' || !phaseData) {
-                detailTitle.textContent = 'Mula';
-                detailObjective.textContent = 'Pilih fasa di sebelah kiri untuk melihat butiran.';
-                detailChecklist.innerHTML = '';
-                return;
-            }
-
-            detailTitle.textContent = phaseData.title;
-            detailObjective.textContent = phaseData.objective;
+        // Fungsi Papar Butiran
+        function showPhaseDetails(phase, clickedNode) {
+            detailTitle.textContent = phase.title;
+            detailObjective.textContent = phase.objective;
+            
+            // Muat status checklist dari localStorage
+            const savedState = loadChecklistState(careerName, phase.id, phase.checklist ? phase.checklist.length : 0);
+            
             detailChecklist.innerHTML = '';
+            let completedCount = 0;
 
-            if (phaseData.checklist && Array.isArray(phaseData.checklist)) {
-                phaseData.checklist.forEach((item) => {
+            if (phase.checklist && Array.isArray(phase.checklist)) {
+                phase.checklist.forEach((item, index) => {
                     const label = document.createElement('label');
                     label.className = 'checklist-item';
                     
                     const checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
-                    
+                    checkbox.checked = savedState[index] || false;
+                    if (checkbox.checked) completedCount++;
+
                     checkbox.addEventListener('change', () => {
-                        const allChecked = [...detailChecklist.querySelectorAll('input')].every(c => c.checked);
-                        if (allChecked) clickedNode.classList.add('completed');
-                        else clickedNode.classList.remove('completed');
+                        savedState[index] = checkbox.checked;
+                        saveChecklistState(careerName, phase.id, savedState);
+                        
+                        // Kira semula kemajuan
+                        const currentChecked = savedState.filter(Boolean).length;
+                        updateProgressUI(phase.checklist.length, currentChecked, clickedNode);
                     });
 
                     const span = document.createElement('span');
@@ -4265,26 +4302,77 @@ window.generateLearningPath = async function(careerName) {
                     detailChecklist.appendChild(label);
                 });
             }
+
+            // Kemas kini progress
+            updateProgressUI(phase.checklist ? phase.checklist.length : 0, completedCount, clickedNode);
+
+            // Set Cabaran Mini (contoh statik atau boleh dijana oleh AI jika ada)
+            miniChallengeText.textContent = `Cuba lakukan satu tindakan kecil hari ini berkaitan ${phase.title.toLowerCase()}. Contohnya, cari satu artikel atau video mengenai topik ini.`;
+            askAiPhaseBtn.style.display = 'inline-block';
+            
+            // Logik butang Tanya AI
+            askAiPhaseBtn.onclick = () => {
+                // Buka chatbox dan masukkan soalan secara automatik
+                window.openAiChat(`Saya ingin bertanya tentang ${phase.title} untuk kerjaya ${careerName}. Boleh terangkan lebih lanjut?`);
+            };
         }
 
-        // Auto-klik Fasa 1 supaya panel kanan tidak kosong
+        function updateProgressUI(total, completed, node) {
+            progressIndicator.textContent = `${completed}/${total} selesai`;
+            if (completed === total && total > 0) {
+                node.classList.add('completed');
+            } else {
+                node.classList.remove('completed');
+            }
+        }
+
+        // Butang Salin & Muat Turun
+        document.getElementById('downloadPlanBtn').onclick = () => {
+            let content = `PELAN PEMBELAJARAN: ${careerName.toUpperCase()}\n\n`;
+            window.currentCareerPlan.phases.forEach(p => {
+                content += `${p.title}\n`;
+                content += `Objektif: ${p.objective}\n`;
+                content += `Checklist:\n`;
+                const saved = loadChecklistState(careerName, p.id, p.checklist ? p.checklist.length : 0);
+                p.checklist.forEach((item, i) => {
+                    content += `  [${saved[i] ? 'X' : ' '}] ${item}\n`;
+                });
+                content += `\nCabaran Mini: Lakukan satu tindakan kecil hari ini.\n\n`;
+                content += `----------------------------------------\n\n`;
+            });
+            const blob = new Blob([content], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `Pelan_${careerName.replace(/\s+/g, '_')}.txt`;
+            a.click();
+        };
+
+        document.getElementById('copyPlanBtn').onclick = () => {
+            let content = `Pelan Pembelajaran: ${careerName}\n`;
+            window.currentCareerPlan.phases.forEach(p => {
+                content += `\n${p.title}\n- ${p.objective}\n`;
+            });
+            navigator.clipboard.writeText(content).then(() => {
+                const btn = document.getElementById('copyPlanBtn');
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Disalin!';
+                setTimeout(() => btn.textContent = originalText, 2000);
+            });
+        };
+
+        // Auto-klik Fasa 1
         setTimeout(() => {
             const firstPhaseNode = flowchartContainer.querySelectorAll('.phase-node')[1]; 
             if (firstPhaseNode) firstPhaseNode.click();
         }, 100);
-
-        console.log("✅ [TEST] Carta alir dan butiran berjaya dipaparkan!");
 
     } catch (error) {
         console.error("Ralat AI:", error);
         modalBody.innerHTML = `
             <div style="text-align: center; padding: 2rem; width: 100%;">
                 <p style="color: #ff6b6b; font-weight: bold;">Ralat Sistem:</p>
-                <p style="color: #ccc; font-size: 0.9rem; word-break: break-all;">${error.message}</p>
-                <button onclick="document.getElementById('aiPathModal').style.display='none'" 
-                        style="margin-top: 1rem; padding: 0.5rem 1.5rem; border-radius: 50px; background: #6b215e; color: white; border: none; cursor: pointer;">
-                    Tutup
-                </button>
+                <p style="color: #ccc; font-size: 0.9rem;">${error.message}</p>
+                <button onclick="document.getElementById('aiPathModal').style.display='none'" style="margin-top: 1rem; padding: 0.5rem 1.5rem; border-radius: 50px; background: #6b215e; color: white; border: none; cursor: pointer;">Tutup</button>
             </div>
         `;
     }
@@ -4293,4 +4381,110 @@ window.generateLearningPath = async function(careerName) {
 window.closeAiPathModal = function() {
     const modal = document.getElementById('aiPathModal');
     if (modal) modal.style.display = 'none';
+};
+window.openAiChat = function(message) {
+    // 1. Tutup modal Pelan Pembelajaran
+    const pathModal = document.getElementById('aiPathModal');
+    if (pathModal) pathModal.style.display = 'none';
+
+    // 2. Buka Chatbox Overlay
+    const chatOverlay = document.getElementById('aiChatOverlay');
+    if (chatOverlay) {
+        chatOverlay.style.display = 'flex';
+        chatOverlay.classList.add('open');
+    }
+
+    // 3. Masukkan mesej ke dalam input chat
+    const chatInput = document.getElementById('aiChatInput');
+    if (chatInput) {
+        chatInput.value = message;
+        
+        // 4. Auto-hantar mesej selepas 300ms (bagi masa UI buka)
+        setTimeout(() => {
+            if (typeof window.sendChatMessage === 'function') {
+                window.sendChatMessage();
+            }
+        }, 300);
+    }
+};
+    // ============================================================
+    // LOGIK PENGHANTARAN MESEJ CHATBOX AI
+    // ============================================================
+    const aiChatSend = document.getElementById('aiChatSend');
+    const aiChatInput = document.getElementById('aiChatInput');
+    const aiChatMessages = document.getElementById('aiChatMessages');
+
+window.sendChatMessage = async function() {
+    const text = aiChatInput.value.trim();
+    if (!text) return;
+
+    // 1. Paparkan mesej pengguna di skrin
+    aiChatMessages.innerHTML += `
+        <div style="text-align: right; margin: 10px 0;">
+            <span style="background: #ec4899; color: white; padding: 8px 12px; border-radius: 15px 15px 0 15px; display: inline-block; max-width: 80%; line-height: 1.4;">${text}</span>
+        </div>
+    `;
+    aiChatInput.value = '';
+    aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+
+    // 2. Paparan Loading
+    const loadingId = 'loading-' + Date.now();
+    aiChatMessages.innerHTML += `
+        <div id="${loadingId}" style="text-align: left; margin: 10px 0;">
+            <span style="background: rgba(255,255,255,0.1); color: #ccc; padding: 8px 12px; border-radius: 15px 15px 15px 0; display: inline-block; font-style: italic;">MoTYF AI sedang menaip...</span>
+        </div>
+    `;
+    aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+
+    try {
+        const isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+        const API_CHAT_URL = isLocal ? 'http://localhost:5000/api/ai/chat' : 'https://motyf-backend.onrender.com/api/ai/chat';
+
+        // Hantar data ke backend
+        const payload = {
+            careerName: "MoTYF Career Assistant",
+            careerDetails: {},
+            messages: [{ role: "user", text: text }]
+        };
+
+        const response = await fetch(API_CHAT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        
+        // Buang loading
+        const loadingEl = document.getElementById(loadingId);
+        if (loadingEl) loadingEl.remove();
+
+        if (!response.ok) throw new Error(data.message || 'Ralat sistem');
+
+        // Ambil jawapan AI
+        const aiReply = data.reply || 'Tiada jawapan.';
+
+        // 3. Format teks AI (Tukar markdown kepada HTML)
+        let formattedReply = aiReply
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/\n/g, '<br>');
+
+        // 4. Paparkan mesej AI
+        aiChatMessages.innerHTML += `
+            <div style="text-align: left; margin: 10px 0;">
+                <span style="background: rgba(255,255,255,0.1); color: white; padding: 8px 12px; border-radius: 15px 15px 15px 0; display: inline-block; max-width: 80%; line-height: 1.4;">${formattedReply}</span>
+            </div>
+        `;
+
+    } catch (err) {
+        const loadingEl = document.getElementById(loadingId);
+        if (loadingEl) loadingEl.remove();
+        aiChatMessages.innerHTML += `
+            <div style="text-align: left; margin: 10px 0;">
+                <span style="color: #ff6b6b; font-size: 0.85rem;">Ralat: ${err.message}</span>
+            </div>
+        `;
+    }
+    aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
 };

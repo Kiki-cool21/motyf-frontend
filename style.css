@@ -7131,3 +7131,48 @@ body {
     text-decoration: line-through;
     color: #9ca3af;
 }
+/* Pastikan modal-body menggunakan flexbox */
+#aiModalBody {
+    display: flex;
+    gap: 15px;
+    height: 65vh; /* Ketinggian tetap */
+    padding: 15px;
+    overflow: hidden; /* Elak scrollbar luar */
+}
+
+/* Lajur Kiri */
+#phaseFlowchart {
+    flex: 0 0 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    overflow-y: auto;
+    padding-right: 5px;
+    scrollbar-width: thin;
+}
+
+/* Lajur Kanan */
+#phaseDetailsPanel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Pastikan butang di bawah */
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow-y: auto; /* Skrol dalam panel ini sahaja */
+    scrollbar-width: thin;
+}
+
+/* Gaya scrollbar nipis */
+#phaseFlowchart::-webkit-scrollbar,
+#phaseDetailsPanel::-webkit-scrollbar {
+    width: 6px;
+}
+#phaseFlowchart::-webkit-scrollbar-thumb,
+#phaseDetailsPanel::-webkit-scrollbar-thumb {
+    background-color: rgba(236, 72, 153, 0.4);
+    border-radius: 10px;
+}
